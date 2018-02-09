@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = *
+
+[Action]
+Description = Checking Arch News ...
+When = PreTransaction
+Exec = /usr/bin/informant check
+AbortOnFail

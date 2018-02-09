@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
-""" Informant will read the Arch Linux News """
+"""
+informant - an Arch Linux News reader
 
+Usage:
+    informant read
+    informant check
+
+Options:
+    -h, --help  Show this help
+    --version   Show version
+
+"""
+
+import docopt
 import feedparser
+from dateutil import parser as date_parser
 
-def main():
+def run():
     """ The main function """
+    argv = docopt.docopt(__doc__, version='informant v0.0.1')
     feed = feedparser.parse('https://archlinux.org/feeds/news')
     for entry in feed['entries']:
-        print(entry['title'])
+        title = entry['title']
+        date = date_parser.parse(entry['published'])
 
 if __name__ == '__main__':
-    main()
+    run()
     exit()

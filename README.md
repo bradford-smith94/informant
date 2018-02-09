@@ -4,9 +4,8 @@ informant is an Arch Linux News reader.
 
 ## Installation
 
-Requires [`feedparser`](https://pypi.python.org/pypi/feedparser).
+Requirements are in `requirements.txt`.
 
 ## TODO
 
 - save list of items already read
-- add pacman hook
