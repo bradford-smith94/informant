@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+""" Informant will read the Arch Linux News """
+
+import feedparser
+
+def main():
+    """ The main function """
+    feed = feedparser.parse('https://archlinux.org/feeds/news')
+    for entry in feed['entries']:
+        print(entry['title'])
+
+if __name__ == '__main__':
+    main()
+    exit()
