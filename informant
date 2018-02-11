@@ -3,12 +3,21 @@
 informant - an Arch Linux News reader
 
 Usage:
-    informant read
-    informant check
+    informant [options] check [--prompt]
+    informant [options] read <item>
+
+Commands:
+    check - Check for unread news items, will exit with a positive return code
+            with the number of unread items. If --prompt is provided informant
+            will ask if you want to continue (this is for use in the pacman
+            hook).
+    read  - Read the specified news item, <item> can be either an index or a
+            full title. This will also save the item as 'read' so that future
+            calls to 'check' will no longer display it.
 
 Options:
-    -h, --help  Show this help
-    --version   Show version
+    -h, --help      Show this help and exit
+    -V,--version    Show version and exit
 
 """
 
@@ -16,13 +25,44 @@ import docopt
 import feedparser
 from dateutil import parser as date_parser
 
+ARCH_NEWS = 'https://archlinux.org/feeds/news'
+
+CHECK_CMD = 'check'
+READ_CMD = 'read'
+ITEM_ARG = '<item>'
+
+def in_db(title, date):
+    """ Check if the given title and date combination is in the database and
+    return True or False """
+    #TODO
+
+def save_item(title, date):
+    """ Save the given title and date combination to the database """
+    #TODO
+
 def run():
     """ The main function """
-    argv = docopt.docopt(__doc__, version='informant v0.0.1')
-    feed = feedparser.parse('https://archlinux.org/feeds/news')
-    for entry in feed['entries']:
-        title = entry['title']
-        date = date_parser.parse(entry['published'])
+    argv = docopt.docopt(__doc__, version='informant v0.0.2')
+    feed = feedparser.parse(ARCH_NEWS)
+    if argv.get(CHECK_CMD):
+        unread = 0
+        for entry in feed.entries:
+            if not in_db(entry.title, date_parser.parse(entry.updated)):
+                print(entry.title)
+                unread += 1
+        exit(unread)
+    elif argv.get(READ_CMD):
+        item = argv[ITEM_ARG]
+        try:
+            index = int(item)
+            entry = feed.entries[index]
+        except ValueError:
+            for entry in feed.entries:
+                if entry.title == item:
+                    break
+            #NOTE: this will read the oldest unread item if no matches are found
+        print(entry.title + '\n\n' + entry.summary)
+        save_item(entry.title, date_parser.parse(entry.updated))
 
 if __name__ == '__main__':
     run()
