@@ -1,6 +1,6 @@
 # informant
 
-informant is an Arch Linux News reader.
+An Arch Linux News reader designed to also be used as an interactive pacman hook.
 
 ## Installation
 
@@ -9,4 +9,6 @@ Requirements are in `requirements.txt`.
 ## TODO
 
 - save list of items already read
-- make use of --prompt for pacman hook
+- implement file option
+- write better documentation here
+    - probably a man page too

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-informant - an Arch Linux News reader
+informant - an Arch Linux News reader designed to also be used as an interactive
+            pacman hook
 
 Usage:
     informant [options] check [--prompt]
@@ -10,14 +11,17 @@ Commands:
     check - Check for unread news items, will exit with a positive return code
             with the number of unread items. If --prompt is provided informant
             will ask if you want to continue (this is for use in the pacman
-            hook).
+            hook), choosing 'yes' will result in a zero return code.
     read  - Read the specified news item, <item> can be either an index or a
             full title. This will also save the item as 'read' so that future
             calls to 'check' will no longer display it.
 
 Options:
-    -h, --help      Show this help and exit
-    -V,--version    Show version and exit
+    -d, --debug                 Print the command line arguments and don't make
+                                changes to the save file
+    -f <file>, --file=<file>    Use <file> as the save location for read items
+    -h, --help                  Show this help and exit
+    -V,--version                Show version and exit
 
 """
 
@@ -28,28 +32,55 @@ from dateutil import parser as date_parser
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
 CHECK_CMD = 'check'
+PROMPT_ARG = '--prompt'
 READ_CMD = 'read'
 ITEM_ARG = '<item>'
+DEBUG_OPT = '--debug'
 
-def in_db(title, date):
-    """ Check if the given title and date combination is in the database and
-    return True or False """
+def has_been_read(title, date):
+    """ Check if the given title and date combination has been read and return
+    True or False """
+    #TODO
+    return False
+
+def mark_as_read(title, date):
+    """ Save the given title and date combination to mark it as read """
     #TODO
 
-def save_item(title, date):
-    """ Save the given title and date combination to the database """
-    #TODO
+def prompt_y_n(question, default=None):
+    """ Print the question to the user and get input, in yes or no form, return
+    True for yes response and False for no response. If default is given and the
+    user response is empty then the default response is returned."""
+    while True:
+        response = input(question)
+        response = response.lower()
+        if response == '' and default != None:
+            return default
+        elif response != '':
+            #NOTE: this only checks the first character of response
+            if response[:1] == 'y':
+                return True
+            elif response[:1] == 'n':
+                return False
+            else:
+                print("Please enter 'y' or 'n'")
+
 
 def run():
     """ The main function """
-    argv = docopt.docopt(__doc__, version='informant v0.0.2')
+    argv = docopt.docopt(__doc__, version='informant v0.0.3')
+    if argv.get(DEBUG_OPT):
+        print(argv)
     feed = feedparser.parse(ARCH_NEWS)
     if argv.get(CHECK_CMD):
         unread = 0
         for entry in feed.entries:
-            if not in_db(entry.title, date_parser.parse(entry.updated)):
+            if not has_been_read(entry.title, date_parser.parse(entry.updated)):
                 print(entry.title)
                 unread += 1
+        if argv.get(PROMPT_ARG):
+            if prompt_y_n('Would you like to continue? [y/N]: ', False):
+                exit()
         exit(unread)
     elif argv.get(READ_CMD):
         item = argv[ITEM_ARG]
@@ -62,7 +93,8 @@ def run():
                     break
             #NOTE: this will read the oldest unread item if no matches are found
         print(entry.title + '\n\n' + entry.summary)
-        save_item(entry.title, date_parser.parse(entry.updated))
+        if not argv.get(DEBUG_OPT):
+            mark_as_read(entry.title, date_parser.parse(entry.updated))
 
 if __name__ == '__main__':
     run()
