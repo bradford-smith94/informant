@@ -7,5 +7,5 @@ Target = *
 [Action]
 Description = Checking Arch News ...
 When = PreTransaction
-Exec = /usr/bin/informant check --prompt
+Exec = /usr/bin/informant check
 AbortOnFail
