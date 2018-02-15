@@ -4,11 +4,18 @@ informant - an Arch Linux News reader designed to also be used as a pacman hook
 
 Usage:
     informant [options] check
+    informant [options] list [--reverse]
     informant [options] read <item>
 
 Commands:
     check - Check for unread news items, will exit with a positive return code
-            with the number of unread items.
+            with the number of unread items. If there is only one unread item it
+            will also print in like 'read' would and mark it as read, else it
+            will print the number of unread titles.
+
+    list -  Print the most recent news items, regardless of read status. If
+            '--reverse' is provided items are printed oldest to newest.
+
     read  - Read the specified news item, <item> can be either an index or a
             full title. This will also save the item as 'read' so that future
             calls to 'check' will no longer display it.
@@ -29,8 +36,11 @@ from dateutil import parser as date_parser
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
 CHECK_CMD = 'check'
+LIST_CMD = 'list'
 READ_CMD = 'read'
+FILE_ARG = '<file>'
 ITEM_ARG = '<item>'
+REV_OPT = '--reverse'
 DEBUG_OPT = '--debug'
 
 def has_been_read(title, date):
@@ -41,35 +51,63 @@ def has_been_read(title, date):
 
 def mark_as_read(title, date):
     """ Save the given title and date combination to mark it as read """
+    if ARGV.get(DEBUG_OPT) or has_been_read(title, date):
+        return
     #TODO
 
-def run():
-    """ The main function """
-    argv = docopt.docopt(__doc__, version='informant v0.0.3')
-    if argv.get(DEBUG_OPT):
-        print(argv)
-    feed = feedparser.parse(ARCH_NEWS)
-    if argv.get(CHECK_CMD):
-        unread = 0
+def check_cmd(feed):
+    """ Run the check command """
+    unread = 0
+    unread_items = []
+    for entry in feed.entries:
+        if not has_been_read(entry.title, date_parser.parse(entry.updated)):
+            unread += 1
+            unread_items.append(entry)
+    if unread == 1:
+        print(unread_items[0].title + '\n\n' + unread_items[0].summary)
+        mark_as_read(unread_items[0].title, unread_items[0].updated)
+    elif unread > 1:
+        print('There are %d unread news items! Use informant to read them.' %
+              unread)
+    exit(unread)
+
+def list_cmd(feed):
+    """ Run the list command """
+    if ARGV.get(REV_OPT):
+        for entry in reversed(feed.entries):
+            print(entry.title)
+    else:
         for entry in feed.entries:
-            if not has_been_read(entry.title, date_parser.parse(entry.updated)):
-                print(entry.title)
-                unread += 1
-        exit(unread)
-    elif argv.get(READ_CMD):
-        item = argv[ITEM_ARG]
-        try:
-            index = int(item)
-            entry = feed.entries[index]
-        except ValueError:
-            for entry in feed.entries:
-                if entry.title == item:
-                    break
-            #NOTE: this will read the oldest unread item if no matches are found
-        print(entry.title + '\n\n' + entry.summary)
-        if not argv.get(DEBUG_OPT):
-            mark_as_read(entry.title, date_parser.parse(entry.updated))
+            print(entry.title)
+
+def read_cmd(feed):
+    """ Run the read command """
+    item = ARGV[ITEM_ARG]
+    try:
+        index = int(item)
+        entry = feed.entries[index]
+    except ValueError:
+        for entry in feed.entries:
+            if entry.title == item:
+                break
+        #NOTE: this will read the oldest unread item if no matches are found
+    print(entry.title + '\n\n' + entry.summary)
+    mark_as_read(entry.title, date_parser.parse(entry.updated))
+
+def run():
+    """ The main function.
+    Check given arguments get feed and run given command. """
+    if ARGV.get(DEBUG_OPT):
+        print(ARGV)
+    feed = feedparser.parse(ARCH_NEWS)
+    if ARGV.get(CHECK_CMD):
+        check_cmd(feed)
+    elif ARGV.get(LIST_CMD):
+        list_cmd(feed)
+    elif ARGV.get(READ_CMD):
+        read_cmd(feed)
 
 if __name__ == '__main__':
+    ARGV = docopt.docopt(__doc__, version='informant v0.0.4')
     run()
     exit()
