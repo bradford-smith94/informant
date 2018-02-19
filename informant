@@ -74,11 +74,11 @@ def check_cmd(feed):
 def list_cmd(feed):
     """ Run the list command """
     if ARGV.get(REV_OPT):
-        for entry in reversed(feed.entries):
-            print(entry.title)
+        feed_list = reversed(feed.entries)
     else:
-        for entry in feed.entries:
-            print(entry.title)
+        feed_list = feed.entries
+    for entry in feed_list:
+        print(entry.title)
 
 def read_cmd(feed):
     """ Run the read command """
