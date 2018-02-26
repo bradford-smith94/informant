@@ -29,8 +29,8 @@ Options:
 
 """
 
-import os.path
 import pickle
+import sys
 
 import docopt
 import feedparser
@@ -53,16 +53,28 @@ def get_save_name():
         return ARGV.get(FILE_ARG)
     return FILE_DEFAULT
 
+def get_readlist(filename):
+    """ Return a List. This list should be a list of timestamps and titles of
+    the feed items that have already been read. If filename does not exist, is
+    empty or otherwise inaccessible then this returns an empty list """
+    try:
+        with open(filename, 'rb') as pickle_file:
+            try:
+                readlist = pickle.load(pickle_file)
+            except EOFError:
+                readlist = []
+    except (FileNotFoundError, PermissionError):
+        readlist = []
+    return readlist
+
 def has_been_read(title, date):
     """ Check if the given title and date combination has been read and return
     True or False """
-    filename = get_save_name()
-    if os.path.isfile(filename):
-        with open(filename, 'rb') as pickle_file:
-            readlist = pickle.load(pickle_file)
-            if date + '|' + title in readlist:
-                return True
-            pickle_file.close()
+    readlist = get_readlist(get_save_name())
+    if ARGV.get(DEBUG_OPT):
+        print(readlist)
+    if str(date.timestamp()) + '|' + title in readlist:
+        return True
     return False
 
 def mark_as_read(title, date):
@@ -70,11 +82,24 @@ def mark_as_read(title, date):
     if ARGV.get(DEBUG_OPT) or has_been_read(title, date):
         return
     filename = get_save_name()
-    with open(filename, 'w+b') as pickle_file:
-        readlist = pickle.load(pickle_file)
-        readlist.append(date + '|' + title)
-        pickle.dump(readlist, pickle_file)
-        pickle_file.close()
+    readlist = get_readlist(filename)
+    readlist.append(str(date.timestamp()) + '|' + title)
+    try:
+        # then open as write to save updated list
+        with open(filename, 'wb') as pickle_file:
+            pickle.dump(readlist, pickle_file)
+            pickle_file.close()
+    except PermissionError:
+        print('ERROR: Unable to save read information, please re-run with correct\
+ permissions to access "{}".'.format(filename), file=sys.stderr)
+
+def pretty_print_item(item):
+    """ Print out the given feed item """
+    title = item.title
+    body = item.summary
+    body = body.replace('<p>', '\t')
+    body = body.replace('</p>', '\n')
+    print(title + '\n\n' + body)
 
 def check_cmd(feed):
     """ Run the check command """
@@ -85,7 +110,7 @@ def check_cmd(feed):
             unread += 1
             unread_items.append(entry)
     if unread == 1:
-        print(unread_items[0].title + '\n\n' + unread_items[0].summary)
+        pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0].title, unread_items[0].updated)
     elif unread > 1:
         print('There are %d unread news items! Use informant to read them.' %
@@ -98,8 +123,11 @@ def list_cmd(feed):
         feed_list = reversed(feed.entries)
     else:
         feed_list = feed.entries
+    index = 0
     for entry in feed_list:
+        print(index, end=': ')
         print(entry.title)
+        index += 1
 
 def read_cmd(feed):
     """ Run the read command """
@@ -112,7 +140,7 @@ def read_cmd(feed):
             if entry.title == item:
                 break
         #NOTE: this will read the oldest unread item if no matches are found
-    print(entry.title + '\n\n' + entry.summary)
+    pretty_print_item(entry)
     mark_as_read(entry.title, date_parser.parse(entry.updated))
 
 def run():
@@ -129,6 +157,6 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.0.4')
+    ARGV = docopt.docopt(__doc__, version='informant v0.0.5')
     run()
     exit()

@@ -11,7 +11,5 @@ Requirements are in `requirements.txt`.
 
 ## TODO
 
-- save list of items already read
-- implement file option
 - write better documentation here
     - probably a man page too
