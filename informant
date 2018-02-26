@@ -29,11 +29,15 @@ Options:
 
 """
 
+import os.path
+import pickle
+
 import docopt
 import feedparser
 from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
+FILE_DEFAULT = '/var/cache/informant.dat'
 
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
@@ -43,17 +47,34 @@ ITEM_ARG = '<item>'
 REV_OPT = '--reverse'
 DEBUG_OPT = '--debug'
 
+def get_save_name():
+    """ Return the name of the file to save read information to """
+    if ARGV.get(FILE_ARG):
+        return ARGV.get(FILE_ARG)
+    return FILE_DEFAULT
+
 def has_been_read(title, date):
     """ Check if the given title and date combination has been read and return
     True or False """
-    #TODO
+    filename = get_save_name()
+    if os.path.isfile(filename):
+        with open(filename, 'rb') as pickle_file:
+            readlist = pickle.load(pickle_file)
+            if date + '|' + title in readlist:
+                return True
+            pickle_file.close()
     return False
 
 def mark_as_read(title, date):
     """ Save the given title and date combination to mark it as read """
     if ARGV.get(DEBUG_OPT) or has_been_read(title, date):
         return
-    #TODO
+    filename = get_save_name()
+    with open(filename, 'w+b') as pickle_file:
+        readlist = pickle.load(pickle_file)
+        readlist.append(date + '|' + title)
+        pickle.dump(readlist, pickle_file)
+        pickle_file.close()
 
 def check_cmd(feed):
     """ Run the check command """
