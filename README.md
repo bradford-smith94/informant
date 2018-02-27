@@ -7,9 +7,12 @@ designed to work that way.
 
 ## Installation
 
-Requirements are in `requirements.txt`.
+You can install from my [AUR package](https://aur.archlinux.org/packages/informant/).
+
+Requirements are in `requirements.txt`. If you want to install it manually.
 
 ## TODO
 
 - write better documentation here
     - probably a man page too
+- add `--unread` to 'list' subcommand
