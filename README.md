@@ -15,4 +15,3 @@ Requirements are in `requirements.txt`. If you want to install it manually.
 
 - write better documentation here
     - probably a man page too
-- add `--unread` to 'list' subcommand

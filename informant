@@ -4,7 +4,7 @@ informant - an Arch Linux News reader designed to also be used as a pacman hook
 
 Usage:
     informant [options] check
-    informant [options] list [--reverse]
+    informant [options] list [--reverse --unread]
     informant [options] read <item>
 
 Commands:
@@ -14,7 +14,8 @@ Commands:
             will print the number of unread titles.
 
     list -  Print the most recent news items, regardless of read status. If
-            '--reverse' is provided items are printed oldest to newest.
+            '--reverse' is provided items are printed oldest to newest. If
+            '--unread' is provided only the unread items are returned.
 
     read  - Read the specified news item, <item> can be either an index or a
             full title. This will also save the item as 'read' so that future
@@ -45,6 +46,7 @@ READ_CMD = 'read'
 FILE_ARG = '<file>'
 ITEM_ARG = '<item>'
 REV_OPT = '--reverse'
+UNREAD_OPT = '--unread'
 DEBUG_OPT = '--debug'
 
 def get_save_name():
@@ -127,9 +129,11 @@ def list_cmd(feed):
         feed_list = feed.entries
     index = 0
     for entry in feed_list:
-        print(index, end=': ')
-        print(entry.title)
-        index += 1
+        if not ARGV.get(UNREAD_OPT) \
+        or (ARGV.get(UNREAD_OPT) and not has_been_read(entry)):
+            print(index, end=': ')
+            print(entry.title)
+            index += 1
 
 def read_cmd(feed):
     """ Run the read command """
