@@ -61,37 +61,39 @@ def get_readlist(filename):
         with open(filename, 'rb') as pickle_file:
             try:
                 readlist = pickle.load(pickle_file)
+                pickle_file.close()
             except EOFError:
                 readlist = []
     except (FileNotFoundError, PermissionError):
         readlist = []
     return readlist
 
-def has_been_read(title, date):
-    """ Check if the given title and date combination has been read and return
-    True or False """
-    readlist = get_readlist(get_save_name())
+def has_been_read(entry):
+    """ Check if the given entry has been read and return True or False """
     if ARGV.get(DEBUG_OPT):
-        print(readlist)
-    if str(date.timestamp()) + '|' + title in readlist:
+        print(READLIST)
+    title = entry.title
+    date = date_parser.parse(entry.updated)
+    if str(date.timestamp()) + '|' + title in READLIST:
         return True
     return False
 
-def mark_as_read(title, date):
-    """ Save the given title and date combination to mark it as read """
-    if ARGV.get(DEBUG_OPT) or has_been_read(title, date):
+def mark_as_read(entry):
+    """ Save the given entry to mark it as read """
+    if ARGV.get(DEBUG_OPT) or has_been_read(entry):
         return
+    title = entry.title
+    date = date_parser.parse(entry.updated)
     filename = get_save_name()
-    readlist = get_readlist(filename)
-    readlist.append(str(date.timestamp()) + '|' + title)
+    READLIST.append(str(date.timestamp()) + '|' + title)
     try:
         # then open as write to save updated list
         with open(filename, 'wb') as pickle_file:
-            pickle.dump(readlist, pickle_file)
+            pickle.dump(READLIST, pickle_file)
             pickle_file.close()
     except PermissionError:
-        print('ERROR: Unable to save read information, please re-run with correct\
- permissions to access "{}".'.format(filename), file=sys.stderr)
+        print('ERROR: Unable to save read information, please re-run with correct \
+permissions to access "{}".'.format(filename), file=sys.stderr)
 
 def pretty_print_item(item):
     """ Print out the given feed item """
@@ -106,12 +108,12 @@ def check_cmd(feed):
     unread = 0
     unread_items = []
     for entry in feed.entries:
-        if not has_been_read(entry.title, date_parser.parse(entry.updated)):
+        if not has_been_read(entry):
             unread += 1
             unread_items.append(entry)
     if unread == 1:
         pretty_print_item(unread_items[0])
-        mark_as_read(unread_items[0].title, unread_items[0].updated)
+        mark_as_read(unread_items[0])
     elif unread > 1:
         print('There are %d unread news items! Use informant to read them.' %
               unread)
@@ -141,7 +143,7 @@ def read_cmd(feed):
                 break
         #NOTE: this will read the oldest unread item if no matches are found
     pretty_print_item(entry)
-    mark_as_read(entry.title, date_parser.parse(entry.updated))
+    mark_as_read(entry)
 
 def run():
     """ The main function.
@@ -157,6 +159,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.0.5')
+    ARGV = docopt.docopt(__doc__, version='informant v0.0.6')
+    READLIST = get_readlist(get_save_name())
     run()
     exit()
