@@ -44,15 +44,23 @@ FILE_DEFAULT = '/var/cache/informant.dat'
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
 READ_CMD = 'read'
-ITEM_ARG = '<item>'
+
+# global options
+DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 RAW_OPT = '--raw'
+
+# 'list' options and args
+ITEM_ARG = '<item>'
 REV_OPT = '--reverse'
 UNREAD_OPT = '--unread'
-DEBUG_OPT = '--debug'
+
+def err_print(*args, **kwargs):
+    """ Same as builtin print but output to stderr. """
+    print(*args, file=sys.stderr, **kwargs)
 
 def get_save_name():
-    """ Return the name of the file to save read information to """
+    """ Return the name of the file to save read information to. """
     if ARGV.get(FILE_OPT):
         return ARGV.get(FILE_OPT)
     return FILE_DEFAULT
@@ -60,7 +68,9 @@ def get_save_name():
 def get_readlist(filename):
     """ Return a List. This list should be a list of timestamps and titles of
     the feed items that have already been read. If filename does not exist, is
-    empty or otherwise inaccessible then this returns an empty list """
+    empty or otherwise inaccessible then this returns an empty list. """
+    if ARGV.get(DEBUG_OPT):
+        err_print('Getting readlist from "{}"'.format(filename))
     try:
         with open(filename, 'rb') as pickle_file:
             try:
@@ -73,9 +83,9 @@ def get_readlist(filename):
     return readlist
 
 def has_been_read(entry):
-    """ Check if the given entry has been read and return True or False """
+    """ Check if the given entry has been read and return True or False. """
     if ARGV.get(DEBUG_OPT):
-        print(READLIST)
+        err_print(READLIST)
     title = entry.title
     date = date_parser.parse(entry.updated)
     if str(date.timestamp()) + '|' + title in READLIST:
@@ -83,7 +93,7 @@ def has_been_read(entry):
     return False
 
 def mark_as_read(entry):
-    """ Save the given entry to mark it as read """
+    """ Save the given entry to mark it as read. """
     if ARGV.get(DEBUG_OPT) or has_been_read(entry):
         return
     title = entry.title
@@ -96,8 +106,8 @@ def mark_as_read(entry):
             pickle.dump(READLIST, pickle_file)
             pickle_file.close()
     except PermissionError:
-        print('ERROR: Unable to save read information, please re-run with correct \
-permissions to access "{}".'.format(filename), file=sys.stderr)
+        err_print('ERROR: Unable to save read information, please re-run with \
+correct permissions to access "{}".'.format(filename))
 
 def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
@@ -115,7 +125,9 @@ def pretty_print_item(item):
     print(title + '\n\n' + body)
 
 def check_cmd(feed):
-    """ Run the check command """
+    """ Run the check command. Check if there are any news items that are
+    unread. If there is only one unread item, print it out and mark it as read.
+    Also, exit the program with return code matching the unread count. """
     unread = 0
     unread_items = []
     for entry in feed.entries:
@@ -126,12 +138,12 @@ def check_cmd(feed):
         pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0])
     elif unread > 1:
-        print('There are %d unread news items! Use informant to read them.' %
-              unread)
+        print('There are {:d} unread news items! Use informant to read \
+them.'.format(unread))
     exit(unread)
 
 def list_cmd(feed):
-    """ Run the list command """
+    """ Run the list command. Print out a list of recent news item titles. """
     if ARGV.get(REV_OPT):
         feed_list = reversed(feed.entries)
     else:
@@ -145,7 +157,7 @@ def list_cmd(feed):
             index += 1
 
 def read_cmd(feed):
-    """ Run the read command """
+    """ Run the read command. Print news items and mark them as read. """
     item = ARGV[ITEM_ARG]
     try:
         index = int(item)
@@ -162,7 +174,7 @@ def run():
     """ The main function.
     Check given arguments get feed and run given command. """
     if ARGV.get(DEBUG_OPT):
-        print(ARGV)
+        err_print(ARGV)
     feed = feedparser.parse(ARCH_NEWS)
     if ARGV.get(CHECK_CMD):
         check_cmd(feed)
@@ -172,7 +184,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.0.6')
+    ARGV = docopt.docopt(__doc__, version='informant v0.0.7 (bond)')
     READLIST = get_readlist(get_save_name())
     run()
     exit()
