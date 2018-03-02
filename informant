@@ -44,8 +44,8 @@ FILE_DEFAULT = '/var/cache/informant.dat'
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
 READ_CMD = 'read'
-FILE_ARG = '<file>'
 ITEM_ARG = '<item>'
+FILE_OPT = '--file'
 RAW_OPT = '--raw'
 REV_OPT = '--reverse'
 UNREAD_OPT = '--unread'
@@ -53,8 +53,8 @@ DEBUG_OPT = '--debug'
 
 def get_save_name():
     """ Return the name of the file to save read information to """
-    if ARGV.get(FILE_ARG):
-        return ARGV.get(FILE_ARG)
+    if ARGV.get(FILE_OPT):
+        return ARGV.get(FILE_OPT)
     return FILE_DEFAULT
 
 def get_readlist(filename):
