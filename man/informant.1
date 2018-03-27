@@ -1,0 +1,67 @@
+.TH INFORMANT 1 "27 MARCH 2018" informant-v0.0.7 "Informant Manual"
+.SH NAME
+informant \- An Arch Linux News reader and pacman hook.
+
+.SH SYNOPSIS
+.I informant
+[options] check
+
+.I informant
+[options] list [--reverse --unread]
+
+.I informant
+[options] read <item>
+
+.SH DESCRIPTION
+.I informant
+has three modes of operation: check, list and read.
+
+.SH COMMANDS
+.TP
+.B check
+Check for unread Arch Linux News items and exit with status code equal to the
+number of unread items.
+.TP
+.B list
+Print out the headlines of the most recent news items (regardless of whether or
+not they have been read). list also can take two options of its own:
+.RS
+.TP
+.B \-\-reverse
+Print the headlines oldest to newest (instead of newest to oldest).
+.TP
+.B \-\-unread
+Print the headlines of only unread items.
+.RE
+.TP
+.BR read " " <item>
+Print the given news item and mark it as read.
+.B <item>
+can be given as an index (printed by the list command without the \-\-unread or
+\-\-reverse options) or as a string matching the headline of a news item.
+
+.SH OPTIONS
+These are the global options which can be applied to any of the subcommands.
+.TP
+.BR \-d ", " \-\-debug
+Print the command line arguments and don't make changes to the save file, useful
+for debugging.
+.TP
+.BR \-r ", " \-\-raw
+When printing items do not replace any markup, items will be printed exactly as
+returned by the RSS feed.
+.TP
+.BR \-h ", " \-\-help
+Print the help and exit.
+.TP
+.BR \-V ", " \-\-version
+Print the version information and exit.
+
+.SH AUTHOR
+Bradford Smith <bradford dot smith nine four at gmail dot com>
+
+.SH LICENSE
+MIT.
+
+.SH BUGS
+Please report bugs at: <https://github.com/bradford-smith94/informant/issues>.
