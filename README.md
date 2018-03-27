@@ -68,4 +68,3 @@ but perhaps that is a better assumption than that they haven't read them.
 ## TODO
 
 - make a better initial setup
-- color printing for warnings and errors

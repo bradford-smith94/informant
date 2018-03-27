@@ -40,6 +40,8 @@ from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
+RED = '\033[0;31m'
+CLEAR = '\033[0m'
 
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
@@ -106,8 +108,9 @@ def mark_as_read(entry):
             pickle.dump(READLIST, pickle_file)
             pickle_file.close()
     except PermissionError:
-        err_print('ERROR: Unable to save read information, please re-run with \
-correct permissions to access "{}".'.format(filename))
+        err_print(RED + 'ERROR: ' + CLEAR + 'Unable to save read information, \
+please re-run with correct permissions to access "{}".'.format(filename))
+        exit(255)
 
 def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
@@ -184,7 +187,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.0.7 (bond)')
+    ARGV = docopt.docopt(__doc__, version='informant v0.0.8')
     READLIST = get_readlist(get_save_name())
     run()
     exit()

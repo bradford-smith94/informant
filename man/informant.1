@@ -38,7 +38,9 @@ Print the headlines of only unread items.
 Print the given news item and mark it as read.
 .B <item>
 can be given as an index (printed by the list command without the \-\-unread or
-\-\-reverse options) or as a string matching the headline of a news item.
+\-\-reverse options) or as a string matching the headline of a news item. read
+will exit with status code 255 if it does not have permission to write to the
+save file.
 
 .SH OPTIONS
 These are the global options which can be applied to any of the subcommands.
@@ -50,6 +52,10 @@ for debugging.
 .BR \-r ", " \-\-raw
 When printing items do not replace any markup, items will be printed exactly as
 returned by the RSS feed.
+.TP
+.BR \-f " " <file> ", " \-\-file=<file>
+Use <file> as the save location for marking items as read. This is a binary
+file.
 .TP
 .BR \-h ", " \-\-help
 Print the help and exit.
