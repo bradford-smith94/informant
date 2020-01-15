@@ -40,8 +40,7 @@ import feedparser
 from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
-"""FILE_DEFAULT = '/var/cache/informant.dat'"""
-FILE_DEFAULT = './informant.dat'
+FILE_DEFAULT = '/var/cache/informant.dat'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
 
