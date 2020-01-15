@@ -34,6 +34,7 @@ Options:
 import pickle
 import sys
 
+import html2text
 import docopt
 import feedparser
 from dateutil import parser as date_parser
@@ -120,12 +121,10 @@ def pretty_print_item(item):
     title = item.title
     body = item.summary
     if not ARGV.get(RAW_OPT):
-        body = body.replace('<p>', '\t')
-        body = body.replace('</p>', '\n')
-        body = body.replace('<pre><code>', '```\n')
-        body = body.replace('</code></pre>', '\n```\n')
-        body = body.replace('<code>', '`')
-        body = body.replace('</code>', '`')
+        h2t = html2text.HTML2Text()
+        h2t.inline_links = False
+        h2t.body_width = 0
+        body = h2t.handle(body)
     print(title + '\n\n' + body)
 
 def check_cmd(feed):
