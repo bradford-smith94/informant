@@ -123,7 +123,7 @@ def pretty_print_item(item):
     if not ARGV.get(RAW_OPT):
         h2t = html2text.HTML2Text()
         h2t.inline_links = False
-        h2t.body_width = 0
+        h2t.body_width = 85
         body = h2t.handle(body)
     print(title + '\n\n' + body)
 
