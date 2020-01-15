@@ -32,14 +32,14 @@ Options:
 """
 
 import pickle
+import shutil
 import sys
+import textwrap
 
-import html2text
 import docopt
 import feedparser
+import html2text
 from dateutil import parser as date_parser
-import shutil
-import textwrap
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
@@ -114,7 +114,7 @@ def mark_as_read(entry):
     except PermissionError:
         err_print(RED + 'ERROR: ' + CLEAR + 'Unable to save read information, \
 please re-run with correct permissions to access "{}".'.format(filename))
-        exit(255)
+        sys.exit(255)
 
 def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
@@ -161,7 +161,7 @@ def check_cmd(feed):
     elif unread > 1:
         print('There are {:d} unread news items! Use informant to read \
 them.'.format(unread))
-    exit(unread)
+    sys.exit(unread)
 
 def list_cmd(feed):
     """ Run the list command. Print out a list of recent news item titles. """
@@ -211,4 +211,4 @@ if __name__ == '__main__':
     ARGV = docopt.docopt(__doc__, version='informant v0.0.8')
     READLIST = get_readlist(get_save_name())
     run()
-    exit()
+    sys.exit()
