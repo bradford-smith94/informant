@@ -27,9 +27,9 @@ is given). There is also a '--reverse' option if you prefer to see them newest
 to oldest.
 
 `informant read` - will print a given news item and mark it as read. You must
-specify a news item as either an index or a string matching the title. If you
-want to use an index it must only be that shown when running `informant list`
-(without '--unread' or '--reverse').
+either specify a news item as either an index or a string matching the title, or
+include the '--all' option. If you want to use an index it must only be that
+shown when running `informant list` (without '--unread' or '--reverse').
 
 More options can be found by reading `informant --help`.
 
@@ -54,17 +54,7 @@ More information on pacman hooks can be found in `man alpm-hooks`.
 
 **Note**: On the first run informant assumes that you have not read any of the
 most recent news items. The RSS feed provides the most recent 10 items, so after
-first install you must use `informant read` 10 times to mark all the most recent
-news items as read. With how it's written currently there isn't an easy way to
-detect the difference between a first run and someone who purposefully deleted
-the save file.
+first install you must use `informant read` to mark all the most recent news
+items as read. You can use `informant read --all` to mark all 10 items at once,
+but this assumes you have actually read the most recent 10 items.
 
-I am trying to consider a better option, perhaps a '--all' option to the read
-command to make post install only 1 command instead of 10, or maybe just a post
-install script in the AUR package. The only downside of the post install script
-would be that it assumes users have read all the news when installing informant,
-but perhaps that is a better assumption than that they haven't read them.
-
-## TODO
-
-- make a better initial setup
