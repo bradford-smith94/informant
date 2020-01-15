@@ -34,12 +34,14 @@ Options:
 import pickle
 import sys
 
+import html2text
 import docopt
 import feedparser
 from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
-FILE_DEFAULT = '/var/cache/informant.dat'
+"""FILE_DEFAULT = '/var/cache/informant.dat'"""
+FILE_DEFAULT = './informant.dat'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
 
@@ -57,6 +59,11 @@ RAW_OPT = '--raw'
 ITEM_ARG = '<item>'
 REV_OPT = '--reverse'
 UNREAD_OPT = '--unread'
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr. """
@@ -120,12 +127,11 @@ def pretty_print_item(item):
     title = item.title
     body = item.summary
     if not ARGV.get(RAW_OPT):
-        body = body.replace('<p>', '\t')
-        body = body.replace('</p>', '\n')
-        body = body.replace('<pre><code>', '```\n')
-        body = body.replace('</code></pre>', '\n```\n')
-        body = body.replace('<code>', '`')
-        body = body.replace('</code>', '`')
+        h2t = html2text.HTML2Text()
+        h2t.inline_links = False
+        h2t.body_width = 0
+        body = h2t.handle(body)
+
     print(title + '\n\n' + body)
 
 def check_cmd(feed):
