@@ -5,7 +5,7 @@ informant - an Arch Linux News reader designed to also be used as a pacman hook
 Usage:
     informant [options] check
     informant [options] list [--reverse --unread]
-    informant [options] read <item>
+    informant [options] read (<item> | --all)
 
 Commands:
     check - Check for unread news items, will exit with a positive return code
@@ -46,6 +46,7 @@ CLEAR = '\033[0m'
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
 READ_CMD = 'read'
+READALL_OPT = '--all'
 
 # global options
 DEBUG_OPT = '--debug'
@@ -161,17 +162,21 @@ def list_cmd(feed):
 
 def read_cmd(feed):
     """ Run the read command. Print news items and mark them as read. """
-    item = ARGV[ITEM_ARG]
-    try:
-        index = int(item)
-        entry = feed.entries[index]
-    except ValueError:
+    if ARGV.get(READALL_OPT):
         for entry in feed.entries:
-            if entry.title == item:
-                break
-        #NOTE: this will read the oldest unread item if no matches are found
-    pretty_print_item(entry)
-    mark_as_read(entry)
+            mark_as_read(entry)
+    else:
+        item = ARGV[ITEM_ARG]
+        try:
+            index = int(item)
+            entry = feed.entries[index]
+        except ValueError:
+            for entry in feed.entries:
+                if entry.title == item:
+                    break
+            #NOTE: this will read the oldest unread item if no matches are found
+        pretty_print_item(entry)
+        mark_as_read(entry)
 
 def run():
     """ The main function.
