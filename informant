@@ -142,7 +142,7 @@ def format_list_item(entry, index):
         wrapped_heading[0] +
         ' ' * (padding) +
         entry.published +
-        ''.join(wrapped_heading[1:])
+        '\n'.join(wrapped_heading[1:])
     )
 
 def check_cmd(feed):
