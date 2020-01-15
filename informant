@@ -37,6 +37,8 @@ import sys
 import docopt
 import feedparser
 from dateutil import parser as date_parser
+import shutil
+import textwrap
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
@@ -128,6 +130,28 @@ def pretty_print_item(item):
         body = body.replace('</code>', '`')
     print(title + '\n' + timestamp + '\n\n' + body)
 
+def format_list_item(entry, index):
+    """ Returns a formatted string with the entry's index number, title, and 
+    right-aligned timestamp. """
+    terminal_width = shutil.get_terminal_size().columns
+    heading = str(index) + ': ' + entry.title
+    padding = terminal_width - len(heading + entry.published)
+    wrap_width = terminal_width - len(entry.published)
+    if (len(heading) > wrap_width):
+        heading = textwrap.wrap(heading, wrap_width)
+        return (
+            heading[0] +
+            ' ' +
+            entry.published +
+            ''.join(heading[1:])
+        )
+    else:
+        return (
+            heading +
+            ' ' * (padding) +
+            entry.published
+        )
+
 def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
     unread. If there is only one unread item, print it out and mark it as read.
@@ -156,8 +180,7 @@ def list_cmd(feed):
     for entry in feed_list:
         if not ARGV.get(UNREAD_OPT) \
         or (ARGV.get(UNREAD_OPT) and not has_been_read(entry)):
-            print(index, end=': ')
-            print(entry.title)
+            print(format_list_item(entry, index))
             index += 1
 
 def read_cmd(feed):
