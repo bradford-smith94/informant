@@ -118,6 +118,7 @@ def pretty_print_item(item):
     replaced. """
     title = item.title
     body = item.summary
+    timestamp = item.published
     if not ARGV.get(RAW_OPT):
         body = body.replace('<p>', '\t')
         body = body.replace('</p>', '\n')
@@ -125,7 +126,7 @@ def pretty_print_item(item):
         body = body.replace('</code></pre>', '\n```\n')
         body = body.replace('<code>', '`')
         body = body.replace('</code>', '`')
-    print(title + '\n\n' + body)
+    print(title + '\n' + timestamp + '\n\n' + body)
 
 def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
