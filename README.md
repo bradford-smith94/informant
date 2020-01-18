@@ -26,10 +26,12 @@ news items it will interrupt your pacman transaction.
 is given). There is also a '--reverse' option if you prefer to see them newest
 to oldest.
 
-`informant read` - will print a given news item and mark it as read. You must
-either specify a news item as either an index or a string matching the title, or
-include the '--all' option. If you want to use an index it must only be that
-shown when running `informant list` (without '--unread' or '--reverse').
+`informant read` - if given a news item, will print that item and mark it as read. 
+You must either specify a news item as either an index or a string matching the title.
+If you want to use an index it must only be that shown when running `informant list` 
+(without '--unread' or '--reverse'). If no item is given, will begin looping through
+all unread items, printing each one and marking them as read with a prompt to continue. 
+Passing the '--all' flag will mark all items as read without printing them.
 
 More options can be found by reading `informant --help`.
 
