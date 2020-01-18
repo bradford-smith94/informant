@@ -123,7 +123,6 @@ def mark_as_read(entry):
         return
     title = entry.title
     date = date_parser.parse(entry.updated)
-    filename = get_save_name()
     READLIST.append(str(date.timestamp()) + '|' + title)
     save_datfile()
 
