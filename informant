@@ -132,18 +132,30 @@ def pretty_print_item(item):
 
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
-    right-aligned timestamp. """
+    right-aligned timestamp. Unread items are bolded"""
     terminal_width = shutil.get_terminal_size().columns
     wrap_width = terminal_width - len(entry.published) - 1
     heading = str(index) + ': ' + entry.title
     wrapped_heading = textwrap.wrap(heading, wrap_width)
     padding = terminal_width - len(wrapped_heading[0] + entry.published)
-    return (
-        wrapped_heading[0] +
-        ' ' * (padding) +
-        entry.published +
-        '\n'.join(wrapped_heading[1:])
-    )
+    if has_been_read(entry):
+        return (
+                wrapped_heading[0] +
+                ' ' * (padding) +
+                entry.published +
+                '\n'.join(wrapped_heading[1:])
+                )
+    else:
+        return (
+            '\033[1m' +
+            wrapped_heading[0] +
+            '\033[0m' +
+            ' ' * (padding) +
+            entry.published +
+            '\033[1m' +
+            '\n'.join(wrapped_heading[1:]) +
+            '\033[0m'
+        )
 
 def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
