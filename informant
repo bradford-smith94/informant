@@ -45,6 +45,7 @@ ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
+BOLD = '\033[1m'
 
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
@@ -147,14 +148,14 @@ def format_list_item(entry, index):
                 )
     else:
         return (
-            '\033[1m' +
+            BOLD +
             wrapped_heading[0] +
-            '\033[0m' +
+            CLEAR +
             ' ' * (padding) +
             entry.published +
-            '\033[1m' +
+            BOLD +
             '\n'.join(wrapped_heading[1:]) +
-            '\033[0m'
+            CLEAR
         )
 
 def check_cmd(feed):
