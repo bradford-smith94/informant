@@ -69,6 +69,23 @@ def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr. """
     print(*args, file=sys.stderr, **kwargs)
 
+def prompt_yes_no(question, default):
+    """ Print 'question' to user with (y/n) and 'default' being the
+    response for blank input.
+    """
+    again = 'Unknown response.'
+    if default.lower() in ('y', 'yes'):
+        options = '(Y/n): '
+    elif default.lower() in ('n', 'no'):
+        options = '(y/N): '
+
+    response = input(' '.join((question, options))).lower()
+    while response not in ('y', 'yes', 'n', 'no', ''):
+        response = input(' '.join((again, question, options))).lower()
+    if response == '':
+        return default
+    return response
+
 def get_save_name():
     """ Return the name of the file to save read information to. """
     if ARGV.get(FILE_OPT):
@@ -220,11 +237,9 @@ def read_cmd(feed):
                 pretty_print_item(entry)
                 mark_as_read(entry)
                 if entry is not unread_entries[-1]:
-                    read_next = input('Read next item? (Y/n) ')
-                    if read_next == 'n' or read_next == 'N':
+                    read_next = prompt_yes_no('Read next item?', 'yes')
+                    if read_next in ('n', 'no'):
                         break
-                    else:
-                        continue
                 else:
                     print('No more unread items')
 
