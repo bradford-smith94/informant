@@ -104,13 +104,13 @@ def get_datfile(filename):
     try:
         with open(filename, 'rb') as pickle_file:
             try:
-                datfile = pickle.load(pickle_file)
+                (cache, readlist) = pickle.load(pickle_file)
                 pickle_file.close()
-            except EOFError:
-                datfile = ({"feed": None, "max-age": None, "last-request": None}, [])
+            except (EOFError, ValueError):
+                (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
     except (FileNotFoundError, PermissionError):
-        datfile = ({"feed": None, "max-age": None, "last-request": None}, [])
-    return datfile
+        (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
+    return (cache, readlist)
 
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
