@@ -215,7 +215,7 @@ def read_cmd(feed):
             unread_entries = list()
             for entry in feed.entries:
                 if not has_been_read(entry):
-                    unread_entries.append(entry)
+                    unread_entries.insert(0, entry)
             for entry in unread_entries:
                 pretty_print_item(entry)
                 mark_as_read(entry)
