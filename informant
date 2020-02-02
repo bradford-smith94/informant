@@ -31,6 +31,7 @@ Options:
     -f <file>, --file=<file>    Use <file> as the save location for read items
     -h, --help                  Show this help and exit
     -V,--version                Show version and exit
+    --no-cache                  Do not use cache
 
 """
 
@@ -38,6 +39,7 @@ import pickle
 import shutil
 import sys
 import textwrap
+import time
 
 import docopt
 import feedparser
@@ -59,6 +61,7 @@ READALL_OPT = '--all'
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 RAW_OPT = '--raw'
+NOCACHE_OPT = '--no-cache'
 
 # 'list' options and args
 ITEM_ARG = '<item>'
@@ -92,22 +95,22 @@ def get_save_name():
         return ARGV.get(FILE_OPT)
     return FILE_DEFAULT
 
-def get_readlist(filename):
-    """ Return a List. This list should be a list of timestamps and titles of
-    the feed items that have already been read. If filename does not exist, is
-    empty or otherwise inaccessible then this returns an empty list. """
+def get_datfile(filename):
+    """ Return a datfile, which should be a tuple with the first element
+    containing the cache, and the second element the list of read items. """
     if ARGV.get(DEBUG_OPT):
-        err_print('Getting readlist from "{}"'.format(filename))
+        err_print('Getting datfile from "{}"'.format(filename))
+
     try:
         with open(filename, 'rb') as pickle_file:
             try:
-                readlist = pickle.load(pickle_file)
+                datfile = pickle.load(pickle_file)
                 pickle_file.close()
             except EOFError:
-                readlist = []
+                datfile = ({"feed": None, "max-age": None, "last-request": None}, [])
     except (FileNotFoundError, PermissionError):
-        readlist = []
-    return readlist
+        datfile = ({"feed": None, "max-age": None, "last-request": None}, [])
+    return datfile
 
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
@@ -119,23 +122,30 @@ def has_been_read(entry):
         return True
     return False
 
-def mark_as_read(entry):
-    """ Save the given entry to mark it as read. """
-    if ARGV.get(DEBUG_OPT) or has_been_read(entry):
+def save_datfile():
+    """ Save the datfile with cache and readlist """
+    if ARGV.get(DEBUG_OPT):
         return
-    title = entry.title
-    date = date_parser.parse(entry.updated)
     filename = get_save_name()
-    READLIST.append(str(date.timestamp()) + '|' + title)
+    datfile_obj = (CACHE, READLIST)
     try:
         # then open as write to save updated list
         with open(filename, 'wb') as pickle_file:
-            pickle.dump(READLIST, pickle_file)
+            pickle.dump(datfile_obj, pickle_file)
             pickle_file.close()
     except PermissionError:
         err_print(RED + 'ERROR: ' + CLEAR + 'Unable to save read information, \
 please re-run with correct permissions to access "{}".'.format(filename))
         sys.exit(255)
+
+def mark_as_read(entry):
+    """ Save the given entry to mark it as read. """
+    if has_been_read(entry):
+        return
+    title = entry.title
+    date = date_parser.parse(entry.updated)
+    READLIST.append(str(date.timestamp()) + '|' + title)
+    save_datfile()
 
 def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
@@ -243,12 +253,43 @@ def read_cmd(feed):
                 else:
                     print('No more unread items')
 
+def cache_is_valid():
+    """ Returns True if the cache exists and is younger than the max-age header. """
+    if ARGV.get(NOCACHE_OPT):
+        return False
+    if not CACHE['last-request'] \
+            or not CACHE['max-age'] \
+            or not CACHE['feed']:
+                return False
+    current_time = float(time.time())
+    last_request = float(CACHE['last-request'])
+    max_age = float(CACHE['max-age'])
+    if current_time - last_request < max_age:
+        return True
+    else:
+        return False
+
+def write_cache(feed):
+    """ Writes cache to datfile. """
+    if ARGV.get(NOCACHE_OPT):
+        return
+    CACHE['feed'] = feed
+    CACHE['last-request'] = str(time.time())
+    CACHE['max-age'] = feed.headers['Cache-Control'].split('=')[1]
+    save_datfile()
+
 def run():
     """ The main function.
     Check given arguments get feed and run given command. """
     if ARGV.get(DEBUG_OPT):
         err_print(ARGV)
-    feed = feedparser.parse(ARCH_NEWS)
+
+    if cache_is_valid():
+        feed = CACHE['feed']
+    else:
+        feed = feedparser.parse(ARCH_NEWS) 
+        write_cache(feed)
+
     if ARGV.get(CHECK_CMD):
         check_cmd(feed)
     elif ARGV.get(LIST_CMD):
@@ -258,6 +299,6 @@ def run():
 
 if __name__ == '__main__':
     ARGV = docopt.docopt(__doc__, version='informant v0.1.0')
-    READLIST = get_readlist(get_save_name())
+    CACHE, READLIST = get_datfile(get_save_name())
     run()
     sys.exit()
