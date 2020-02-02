@@ -21,7 +21,7 @@ Commands:
             full title. This will also save the item as 'read' so that future
             calls to 'check' will no longer display it. If no <item> is given,
             will begin looping through all unread items, printing each one and
-            marking them as read with a prompt to continue. Passing the --all 
+            marking them as read with a prompt to continue. Passing the --all
             flag will mark all items as read without printing.
 
 Options:
@@ -128,6 +128,8 @@ def pretty_print_item(item):
     body = item.summary
     timestamp = item.published
     if not ARGV.get(RAW_OPT):
+        #if not using raw also bold title
+        title = BOLD + title + CLEAR
         h2t = html2text.HTML2Text()
         h2t.inline_links = False
         h2t.body_width = 85
