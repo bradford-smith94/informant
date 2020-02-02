@@ -173,10 +173,10 @@ def format_list_item(entry, index):
     padding = terminal_width - len(wrapped_heading[0] + entry.published)
     if has_been_read(entry):
         return (
-                wrapped_heading[0] +
-                ' ' * (padding) +
-                entry.published +
-                '\n'.join(wrapped_heading[1:])
+            wrapped_heading[0] +
+            ' ' * (padding) +
+            entry.published +
+            '\n'.join(wrapped_heading[1:])
                 )
     else:
         return (
@@ -260,14 +260,11 @@ def cache_is_valid():
     if not CACHE['last-request'] \
             or not CACHE['max-age'] \
             or not CACHE['feed']:
-                return False
+        return False
     current_time = float(time.time())
     last_request = float(CACHE['last-request'])
     max_age = float(CACHE['max-age'])
-    if current_time - last_request < max_age:
-        return True
-    else:
-        return False
+    return bool(current_time - last_request < max_age)
 
 def write_cache(feed):
     """ Writes cache to datfile. """
@@ -287,7 +284,7 @@ def run():
     if cache_is_valid():
         feed = CACHE['feed']
     else:
-        feed = feedparser.parse(ARCH_NEWS) 
+        feed = feedparser.parse(ARCH_NEWS)
         write_cache(feed)
 
     if ARGV.get(CHECK_CMD):
@@ -298,7 +295,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.1.0')
+    ARGV = docopt.docopt(__doc__, version='informant v0.2.0')
     CACHE, READLIST = get_datfile(get_save_name())
     run()
     sys.exit()

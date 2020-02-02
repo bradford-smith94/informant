@@ -11,6 +11,9 @@ You can install from my [AUR package](https://aur.archlinux.org/packages/informa
 
 Requirements are in `requirements.txt`. If you want to install it manually.
 
+On the first run informant assumes that you have not read any of the most recent news items.
+Use the `informant read` command specified below to mark items as read.
+
 ## How does it work?
 
 informant provides 3 subcommands, 'check', 'list' and 'read'.
@@ -26,14 +29,14 @@ news items it will interrupt your pacman transaction.
 is given). There is also a '--reverse' option if you prefer to see them newest
 to oldest.
 
-`informant read` - if given a news item, will print that item and mark it as read. 
-You must either specify a news item as either an index or a string matching the title.
-If you want to use an index it must only be that shown when running `informant list` 
+`informant read` - if given a news item, will print that item and mark it as read.
+You can specify a news item as either an index or a string matching the title.
+If you want to use an index it must only be that shown when running `informant list`
 (without '--unread' or '--reverse'). If no item is given, will begin looping through
-all unread items, printing each one and marking them as read with a prompt to continue. 
+all unread items, printing each one and marking them as read with a prompt to continue.
 Passing the '--all' flag will mark all items as read without printing them.
 
-More options can be found by reading `informant --help`.
+More options can be found by reading `informant --help` or `man informant`.
 
 ### About the pacman hook
 
@@ -51,12 +54,4 @@ able to override the pacman hook by placing a new hook in
 /etc/pacman.d/hooks/informant.hook`).
 
 More information on pacman hooks can be found in `man alpm-hooks`.
-
-### First time use
-
-**Note**: On the first run informant assumes that you have not read any of the
-most recent news items. The RSS feed provides the most recent 10 items, so after
-first install you must use `informant read` to mark all the most recent news
-items as read. You can use `informant read --all` to mark all 10 items at once,
-but this assumes you have actually read the most recent 10 items.
 

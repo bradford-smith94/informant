@@ -1,4 +1,4 @@
-.TH INFORMANT 1 "15 JANUARY 2020" informant-v0.1.0 "Informant Manual"
+.TH INFORMANT 1 "02 FEBRUARY 2020" informant-v0.2.0 "Informant Manual"
 .SH NAME
 informant \- An Arch Linux News reader and pacman hook.
 
@@ -10,17 +10,19 @@ informant \- An Arch Linux News reader and pacman hook.
 [options] list [--reverse --unread]
 
 .I informant
-[options] read (<item> | --all)
+[options] read [<item> | --all]
 
 .SH DESCRIPTION
 .I informant
 has three modes of operation: check, list and read.
 
 .SH COMMANDS
+
 .TP
 .B check
 Check for unread Arch Linux News items and exit with status code equal to the
 number of unread items.
+
 .TP
 .B list
 Print out the headlines of the most recent news items (regardless of whether or
@@ -33,14 +35,29 @@ Print the headlines oldest to newest (instead of newest to oldest).
 .B \-\-unread
 Print the headlines of only unread items.
 .RE
+
 .TP
-.BR read " " (<item> | --all)
+.BR read " " [<item> | --all]
 Print the given news item and mark it as read.
 .B <item>
-can be given as an index (printed by the list command without the \-\-unread or
-\-\-reverse options) or as a string matching the headline of a news item. read
+can be given as an index (printed by the
+.B list
+command without the
+.B \-\-unread
+or
+.B \-\-reverse
+options) or as a string matching the headline of a news item.
+.B read
 will exit with status code 255 if it does not have permission to write to the
 save file.
+
+When run without
+.BR <item>
+or
+.B \-\-all
+read will run interactively printing all unread news items from oldest to newest
+prompting the user if they want to continue reading.
+.RS
 .TP
 .B \-\-all
 Mark all the most recent news items as read without printing them.
@@ -48,21 +65,35 @@ Mark all the most recent news items as read without printing them.
 
 .SH OPTIONS
 These are the global options which can be applied to any of the subcommands.
+
 .TP
 .BR \-d ", " \-\-debug
 Print the command line arguments and don't make changes to the save file, useful
 for debugging.
+
 .TP
 .BR \-r ", " \-\-raw
 When printing items do not replace any markup, items will be printed exactly as
 returned by the RSS feed.
+
 .TP
 .BR \-f " " <file> ", " \-\-file=<file>
 Use <file> as the save location for marking items as read. This is a binary
 file.
+
+.B NOTE
+Changing the file will not change the file read by the pacman hook because the
+pacman hook runs as root, if you want to change that you can do so manually by
+editing /usr/share/libalpm/hooks/informant.hook
+
+.TP
+.BR \-\-no\-cache
+Do not check the cache.
+
 .TP
 .BR \-h ", " \-\-help
 Print the help and exit.
+
 .TP
 .BR \-V ", " \-\-version
 Print the version information and exit.
