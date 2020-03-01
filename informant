@@ -286,7 +286,7 @@ def run():
     else:
         feed = feedparser.parse(ARCH_NEWS)
         if feed.bozo:
-            print(feed.bozo_exception)
+            err_print(feed.bozo_exception)
             sys.exit(255)
         write_cache(feed)
 
