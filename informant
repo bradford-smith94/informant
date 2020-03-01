@@ -285,6 +285,9 @@ def run():
         feed = CACHE['feed']
     else:
         feed = feedparser.parse(ARCH_NEWS)
+        if feed.bozo:
+            err_print(feed.bozo_exception)
+            sys.exit(255)
         write_cache(feed)
 
     if ARGV.get(CHECK_CMD):
