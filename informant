@@ -46,8 +46,10 @@ import feedparser
 import html2text
 from dateutil import parser as date_parser
 
+USERNAME = os.getenv("SUDO_USER") or os.getenv("USER") 
+HOME = os.path.expanduser('~'+USERNAME)
+FILE_DEFAULT = HOME+'/.cache/informant.dat'
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
-FILE_DEFAULT = os.getenv("HOME")+'/.cache/informant.dat'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
 BOLD = '\033[1m'
