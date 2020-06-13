@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 informant - an Arch Linux News reader designed to also be used as a pacman hook
 
@@ -40,15 +40,12 @@ import shutil
 import sys
 import textwrap
 import time
-import os
+import os, grp, pwd
 import docopt
 import feedparser
 import html2text
 from dateutil import parser as date_parser
 
-USERNAME = os.getenv("SUDO_USER") or os.getenv("USER") 
-HOME = os.path.expanduser('~'+USERNAME)
-FILE_DEFAULT = HOME+'/.cache/informant.dat'
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
@@ -93,9 +90,22 @@ def prompt_yes_no(question, default):
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
+    path = ""
+    user = os.getenv("SUDO_USER") or os.getenv("USER") 
     if ARGV.get(FILE_OPT):
-        return ARGV.get(FILE_OPT)
-    return FILE_DEFAULT
+        path = ARGV.get(FILE_OPT)
+    else:
+        home = os.path.expanduser('~'+user)
+        path = home+'/.cache/informant.dat'
+
+    """ Check if the file doesn't exist, create it with user ownership """
+    if not os.path.exists(path):
+        with open(path, "w"):
+            uid = pwd.getpwnam(user).pw_uid
+            gid = grp.getgrnam("users").gr_gid
+            os.chown(path, uid, gid)
+
+    return path
 
 def get_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
