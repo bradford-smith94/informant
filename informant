@@ -40,14 +40,14 @@ import shutil
 import sys
 import textwrap
 import time
-
+import os
 import docopt
 import feedparser
 import html2text
 from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
-FILE_DEFAULT = '/var/cache/informant.dat'
+FILE_DEFAULT = os.getenv("HOME")+'/.cache/informant.dat'
 RED = '\033[0;31m'
 CLEAR = '\033[0m'
 BOLD = '\033[1m'
