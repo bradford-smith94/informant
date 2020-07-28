@@ -298,7 +298,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.2.0')
+    ARGV = docopt.docopt(__doc__, version='informant v0.2.2')
     CACHE, READLIST = get_datfile(get_save_name())
     run()
     sys.exit()
