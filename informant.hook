@@ -5,7 +5,7 @@ Type = Package
 Target = *
 
 [Action]
-Description = Checking Arch News ...
+Description = Checking Arch News with informant ...
 When = PreTransaction
 Exec = /usr/bin/informant check
 AbortOnFail

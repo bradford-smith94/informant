@@ -35,12 +35,16 @@ Options:
 
 """
 
+# builtins
+import os
 import pickle
 import shutil
+import subprocess
 import sys
 import textwrap
 import time
 
+# external
 import docopt
 import feedparser
 import html2text
@@ -48,14 +52,17 @@ from dateutil import parser as date_parser
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
+
+# colors
 RED = '\033[0;31m'
+YELLOW = '\033[1;33m'
 CLEAR = '\033[0m'
 BOLD = '\033[1m'
 
+# commands
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
 READ_CMD = 'read'
-READALL_OPT = '--all'
 
 # global options
 DEBUG_OPT = '--debug'
@@ -63,14 +70,24 @@ FILE_OPT = '--file'
 RAW_OPT = '--raw'
 NOCACHE_OPT = '--no-cache'
 
-# 'list' options and args
-ITEM_ARG = '<item>'
+# 'list' options
 REV_OPT = '--reverse'
 UNREAD_OPT = '--unread'
+
+# 'read' options and args
+ITEM_ARG = '<item>'
+READALL_OPT = '--all'
 
 def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr. """
     print(*args, file=sys.stderr, **kwargs)
+
+def pacman_msg(*args, **kwargs):
+    """ Same as print but include informant preamble so the message is clear in pacman. """
+    msg = YELLOW + ':: informant: ' + CLEAR
+    for arg in args:
+        msg += arg
+    print(msg, **kwargs)
 
 def prompt_yes_no(question, default):
     """ Print 'question' to user with (y/n) and 'default' being the
@@ -88,6 +105,16 @@ def prompt_yes_no(question, default):
     if response == '':
         return default
     return response
+
+def running_from_pacman():
+    """ Return True if the parent process is pacman """
+    ppid = os.getppid()
+    p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
+    p_name = p_name.decode().rstrip()
+    if ARGV.get(DEBUG_OPT):
+        err_print('informant: running from: {}'.format(p_name))
+    return p_name == 'pacman'
+
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
@@ -201,11 +228,17 @@ def check_cmd(feed):
             unread += 1
             unread_items.append(entry)
     if unread == 1:
+        if RFP:
+            pacman_msg('Stopping upgrade to print news')
         pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0])
+        if RFP:
+            pacman_msg('You can re-run your pacman command to complete the upgrade')
     elif unread > 1:
         print('There are {:d} unread news items! Use informant to read \
 them.'.format(unread))
+        if RFP:
+            pacman_msg('Run `informant read` before re-running your pacman command')
     sys.exit(unread)
 
 def list_cmd(feed):
@@ -286,7 +319,10 @@ def run():
     else:
         feed = feedparser.parse(ARCH_NEWS)
         if feed.bozo:
-            err_print(feed.bozo_exception)
+            err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(feed.bozo_exception))
+            if RFP:
+                pacman_msg("Exiting so we don't block your pacman upgrade")
+                sys.exit(0)
             sys.exit(255)
         write_cache(feed)
 
@@ -298,7 +334,8 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.2.2')
+    ARGV = docopt.docopt(__doc__, version='informant v0.3.0')
     CACHE, READLIST = get_datfile(get_save_name())
+    RFP = running_from_pacman()
     run()
     sys.exit()

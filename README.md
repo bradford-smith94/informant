@@ -3,7 +3,8 @@
 An Arch Linux News reader designed to also be used as a pacman hook.
 
 Originally I had wanted to make an interactive pacman hook, but pacman is not
-designed to work that way.
+designed to work that way. So informant will instead interrupt pacman
+transactions to make sure you have read the news first.
 
 ## Installation
 
