@@ -3,7 +3,8 @@
 An Arch Linux News reader designed to also be used as a pacman hook.
 
 Originally I had wanted to make an interactive pacman hook, but pacman is not
-designed to work that way.
+designed to work that way. So informant will instead interrupt pacman
+transactions to make sure you have read the news first.
 
 ## Installation
 
@@ -49,9 +50,9 @@ transaction (even after trying to read the news) you should be able to `pacman
 
 informant installs its hook to `/usr/share/libalpm/hooks/` so you should also be
 able to override the pacman hook by placing a new hook in
-`/etc/pacman.d/hooks/informant.hook` or disable it by placing a symlink to
+`/etc/pacman.d/hooks/00-informant.hook` or disable it by placing a symlink to
 `/dev/null` in that location (e.g. `ln -s /dev/null
-/etc/pacman.d/hooks/informant.hook`).
+/etc/pacman.d/hooks/00-informant.hook`).
 
 More information on pacman hooks can be found in `man alpm-hooks`.
 
