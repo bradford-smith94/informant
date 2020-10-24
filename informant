@@ -36,6 +36,7 @@ Options:
 """
 
 # builtins
+import json
 import os
 import pickle
 import shutil
@@ -50,6 +51,7 @@ import feedparser
 import html2text
 from dateutil import parser as date_parser
 
+CONFIG_FILE = 'config.json'
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
 
@@ -143,8 +145,8 @@ def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
     if ARGV.get(DEBUG_OPT):
         err_print(READLIST)
-    title = entry.title
-    date = date_parser.parse(entry.updated)
+    title = entry['title']
+    date = entry['ts']
     if str(date.timestamp()) + '|' + title in READLIST:
         return True
     return False
@@ -169,8 +171,8 @@ def mark_as_read(entry):
     """ Save the given entry to mark it as read. """
     if has_been_read(entry):
         return
-    title = entry.title
-    date = date_parser.parse(entry.updated)
+    title = entry['title']
+    date = entry['ts']
     READLIST.append(str(date.timestamp()) + '|' + title)
     save_datfile()
 
@@ -178,9 +180,9 @@ def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
     nicer. If the '--raw' option has been provided then the markup will not be
     replaced. """
-    title = item.title
-    body = item.summary
-    timestamp = item.published
+    title = item['title']
+    body = item['body']
+    timestamp = item['ts']
     if not ARGV.get(RAW_OPT):
         #if not using raw also bold title
         title = BOLD + title + CLEAR
@@ -194,15 +196,15 @@ def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
     right-aligned timestamp. Unread items are bolded"""
     terminal_width = shutil.get_terminal_size().columns
-    wrap_width = terminal_width - len(entry.published) - 1
-    heading = str(index) + ': ' + entry.title
+    wrap_width = terminal_width - len(str(entry['ts'])) - 1
+    heading = str(index) + ': ' + entry['title']
     wrapped_heading = textwrap.wrap(heading, wrap_width)
-    padding = terminal_width - len(wrapped_heading[0] + entry.published)
+    padding = terminal_width - len(wrapped_heading[0] + str(entry['ts']))
     if has_been_read(entry):
         return (
             wrapped_heading[0] +
             ' ' * (padding) +
-            entry.published +
+            str(entry['ts']) +
             '\n'.join(wrapped_heading[1:])
                 )
     else:
@@ -211,7 +213,7 @@ def format_list_item(entry, index):
             wrapped_heading[0] +
             CLEAR +
             ' ' * (padding) +
-            entry.published +
+            str(entry['ts']) +
             BOLD +
             '\n'.join(wrapped_heading[1:]) +
             CLEAR
@@ -223,7 +225,7 @@ def check_cmd(feed):
     Also, exit the program with return code matching the unread count. """
     unread = 0
     unread_items = []
-    for entry in feed.entries:
+    for entry in feed:
         if not has_been_read(entry):
             unread += 1
             unread_items.append(entry)
@@ -244,9 +246,9 @@ them.'.format(unread))
 def list_cmd(feed):
     """ Run the list command. Print out a list of recent news item titles. """
     if ARGV.get(REV_OPT):
-        feed_list = reversed(feed.entries)
+        feed_list = reversed(feed)
     else:
-        feed_list = feed.entries
+        feed_list = feed
     index = 0
     for entry in feed_list:
         if not ARGV.get(UNREAD_OPT) \
@@ -257,15 +259,15 @@ def list_cmd(feed):
 def read_cmd(feed):
     """ Run the read command. Print news items and mark them as read. """
     if ARGV.get(READALL_OPT):
-        for entry in feed.entries:
+        for entry in feed:
             mark_as_read(entry)
     else:
         if ARGV[ITEM_ARG]:
             try:
                 item = int(ARGV[ITEM_ARG])
-                entry = feed.entries[item]
+                entry = feed[item]
             except ValueError:
-                for entry in feed.entries:
+                for entry in feed:
                     if entry.title == item:
                         break
                 #NOTE: this will read the oldest unread item if no matches are found
@@ -273,7 +275,7 @@ def read_cmd(feed):
             mark_as_read(entry)
         else:
             unread_entries = list()
-            for entry in feed.entries:
+            for entry in feed:
                 if not has_been_read(entry):
                     unread_entries.insert(0, entry)
             for entry in unread_entries:
@@ -317,13 +319,39 @@ def run():
     if cache_is_valid():
         feed = CACHE['feed']
     else:
-        feed = feedparser.parse(ARCH_NEWS)
-        if feed.bozo:
-            err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(feed.bozo_exception))
-            if RFP:
-                pacman_msg("Exiting so we don't block your pacman upgrade")
-                sys.exit(0)
-            sys.exit(255)
+        feed = []
+        for feed_item in CONFIG['feeds']:
+            if 'url' not in feed_item:
+                continue
+            url = feed_item['url']
+            if 'title-key' in feed_item:
+                title_key = feed_item['title-key']
+            else:
+                title_key = 'title'
+            if 'body-key' in feed_item:
+                body_key = feed_item['body-key']
+            else:
+                body_key = 'body'
+            if 'ts-key' in feed_item:
+                ts_key = feed_item['ts-key']
+            else:
+                ts_key = 'ts'
+            f = feedparser.parse(url)
+            if f.bozo:
+                err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(f.bozo_exception))
+                if RFP:
+                    pacman_msg("Exiting so we don't block your pacman upgrade")
+                    sys.exit(0)
+                sys.exit(255)
+            for item in f.entries:
+                title = item[title_key]
+                body = item[body_key]
+                ts = date_parser.parse(item[ts_key])
+                feed.append({'title': title, 'body': body, 'ts': ts})
+        if not feed:
+            pass #TODO
+        else:
+            feed = sorted(feed, key=lambda k: k['ts'], reverse=True)
         write_cache(feed)
 
     if ARGV.get(CHECK_CMD):
@@ -337,5 +365,7 @@ if __name__ == '__main__':
     ARGV = docopt.docopt(__doc__, version='informant v0.3.0')
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
+    with open(CONFIG_FILE, 'r') as cfg:
+        CONFIG = json.loads(cfg.read())
     run()
     sys.exit()
