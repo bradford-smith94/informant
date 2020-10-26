@@ -262,16 +262,19 @@ def read_cmd(feed):
     else:
         if ARGV[ITEM_ARG]:
             item = ARGV[ITEM_ARG]
-            try:
-                item = int(item)
-                entry = feed.entries[item]
-            except ValueError:
+            if item.isdigit():
+                entry = feed.entries[int(item)]
+                pretty_print_item(entry)
+                mark_as_read(entry)
+            else:
                 for entry in feed.entries:
                     if entry.title == item:
+                        pretty_print_item(entry)
+                        mark_as_read(entry)
                         break
-                #NOTE: this will read the oldest unread item if no matches are found
-            pretty_print_item(entry)
-            mark_as_read(entry)
+                else:
+                    err_print('Could not find ' + item + ' in newsfeed')
+                    sys.exit(255)
         else:
             unread_entries = list()
             for entry in feed.entries:
