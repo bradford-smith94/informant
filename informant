@@ -270,12 +270,12 @@ def read_cmd(feed):
                 mark_as_read(entry)
             else:
                 for entry in feed.entries:
-                    if entry.title == item:
+                    if item in entry.title:
                         pretty_print_item(entry)
                         mark_as_read(entry)
                         break
                 else:
-                    err_print('Could not find ' + item + ' in newsfeed')
+                    err_print('Could not find "' + item + '" in newsfeed')
                     sys.exit(255)
         else:
             unread_entries = list()
@@ -340,7 +340,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.3.0')
+    ARGV = docopt.docopt(__doc__, version='informant v0.3.1')
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
     run()
