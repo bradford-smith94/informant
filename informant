@@ -98,6 +98,8 @@ def prompt_yes_no(question, default):
         options = '(Y/n): '
     elif default.lower() in ('n', 'no'):
         options = '(y/N): '
+    else:
+        raise ValueError('default must be "y", "yes", "n", or "no"')
 
     response = input(' '.join((question, options))).lower()
     while response not in ('y', 'yes', 'n', 'no', ''):
