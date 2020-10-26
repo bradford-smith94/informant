@@ -261,8 +261,9 @@ def read_cmd(feed):
             mark_as_read(entry)
     else:
         if ARGV[ITEM_ARG]:
+            item = ARGV[ITEM_ARG]
             try:
-                item = int(ARGV[ITEM_ARG])
+                item = int(item)
                 entry = feed.entries[item]
             except ValueError:
                 for entry in feed.entries:
