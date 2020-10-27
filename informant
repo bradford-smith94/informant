@@ -146,7 +146,7 @@ def has_been_read(entry):
     if ARGV.get(DEBUG_OPT):
         err_print(READLIST)
     title = entry['title']
-    date = entry['ts']
+    date = entry['timestamp']
     if str(date.timestamp()) + '|' + title in READLIST:
         return True
     return False
@@ -172,7 +172,7 @@ def mark_as_read(entry):
     if has_been_read(entry):
         return
     title = entry['title']
-    date = entry['ts']
+    date = entry['timestamp']
     READLIST.append(str(date.timestamp()) + '|' + title)
     save_datfile()
 
@@ -182,7 +182,7 @@ def pretty_print_item(item):
     replaced. """
     title = item['title']
     body = item['body']
-    timestamp = item['ts']
+    timestamp = item['timestamp']
     if not ARGV.get(RAW_OPT):
         #if not using raw also bold title
         title = BOLD + title + CLEAR
@@ -196,15 +196,15 @@ def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
     right-aligned timestamp. Unread items are bolded"""
     terminal_width = shutil.get_terminal_size().columns
-    wrap_width = terminal_width - len(str(entry['ts'])) - 1
+    wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
     heading = str(index) + ': ' + entry['title']
     wrapped_heading = textwrap.wrap(heading, wrap_width)
-    padding = terminal_width - len(wrapped_heading[0] + str(entry['ts']))
+    padding = terminal_width - len(wrapped_heading[0] + str(entry['timestamp']))
     if has_been_read(entry):
         return (
             wrapped_heading[0] +
             ' ' * (padding) +
-            str(entry['ts']) +
+            str(entry['timestamp']) +
             '\n'.join(wrapped_heading[1:])
                 )
     else:
@@ -213,7 +213,7 @@ def format_list_item(entry, index):
             wrapped_heading[0] +
             CLEAR +
             ' ' * (padding) +
-            str(entry['ts']) +
+            str(entry['timestamp']) +
             BOLD +
             '\n'.join(wrapped_heading[1:]) +
             CLEAR
@@ -332,10 +332,10 @@ def run():
                 body_key = feed_item['body-key']
             else:
                 body_key = 'body'
-            if 'ts-key' in feed_item:
-                ts_key = feed_item['ts-key']
+            if 'timestamp-key' in feed_item:
+                timestamp_key = feed_item['timestamp-key']
             else:
-                ts_key = 'ts'
+                timestamp_key = 'timestamp'
             f = feedparser.parse(url)
             if f.bozo:
                 err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(f.bozo_exception))
@@ -346,12 +346,12 @@ def run():
             for item in f.entries:
                 title = item[title_key]
                 body = item[body_key]
-                ts = date_parser.parse(item[ts_key])
-                feed.append({'title': title, 'body': body, 'ts': ts})
+                timestamp = date_parser.parse(item[timestamp_key])
+                feed.append({'title': title, 'body': body, 'timestamp': timestamp})
         if not feed:
             pass #TODO
         else:
-            feed = sorted(feed, key=lambda k: k['ts'], reverse=True)
+            feed = sorted(feed, key=lambda k: k['timestamp'], reverse=True)
         write_cache(feed)
 
     if ARGV.get(CHECK_CMD):
