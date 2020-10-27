@@ -36,6 +36,7 @@ Options:
 """
 
 # builtins
+import datetime
 import json
 import os
 import pickle
@@ -51,7 +52,7 @@ import feedparser
 import html2text
 from dateutil import parser as date_parser
 
-CONFIG_FILE = 'config.json'
+CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
 
@@ -138,7 +139,7 @@ def get_datfile(filename):
             except (EOFError, ValueError):
                 (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
     except (FileNotFoundError, PermissionError):
-        (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
+        (cache, readlist) = ({"feed": None, "components": {}}, [])
     return (cache, readlist)
 
 def has_been_read(entry):
@@ -289,26 +290,119 @@ def read_cmd(feed):
                     print('No more unread items')
 
 def cache_is_valid():
-    """ Returns True if the cache exists and is younger than the max-age header. """
+    """ Returns True if the cache exists and is valid, returns False if the
+    cache doesn't exist or is empty. In the case of a partially valid cache
+    return two lists of component feeds (valid, invalid).
+    """
     if ARGV.get(NOCACHE_OPT):
         return False
-    if not CACHE['last-request'] \
-            or not CACHE['max-age'] \
-            or not CACHE['feed']:
+    if not CACHE['components'] or not CACHE['feed']:
         return False
-    current_time = float(time.time())
-    last_request = float(CACHE['last-request'])
-    max_age = float(CACHE['max-age'])
-    return bool(current_time - last_request < max_age)
+    valid_components = []
+    invalid_components = []
+    for component in CACHE['components']:
+        if 'max-age' in component:
+            current_time = float(time.time())
+            last_request = float(component['last-request'])
+            max_age = float(CACHE['max-age'])
+            if bool(current_time - last_request < max_age):
+                invalid_components.append(component['feed'])
+            else:
+                valid_components.append(component['feed'])
+        else:
+            dt_now = datetime.datetime.now()
+            expires = date_parser.parse(component['expires'])
+            if expires < dt_now:
+                invalid_components.append(component['feed'])
+            else:
+                valid_components.append(component['feed'])
+    if not invalid_components:
+        return True
+    return valid_components, invalid_components
 
-def write_cache(feed):
+def write_cache(feed, component_feeds):
     """ Writes cache to datfile. """
     if ARGV.get(NOCACHE_OPT):
         return
     CACHE['feed'] = feed
-    CACHE['last-request'] = str(time.time())
-    CACHE['max-age'] = feed.headers['Cache-Control'].split('=')[1]
+    for item in component_feeds:
+        item_cache = CACHE['components'][item['keys']['url']]
+        item_cache['feed'] = item
+        item_cache['last-request'] = str(time.time())
+        cache_control = item['feed'].headers['Cache-Control']
+        if 'max-age' in cache_control:
+            idx = cache_control.find('max-age')
+            item_cache['max-age'] = cache_control[idx:].split('=')[1]
+        else:
+            item_cache['expires'] = item['feed'].headers['Expires']
     save_datfile()
+
+def parse_components():
+    """ Parse CONFIG into a list of component feeds """
+    component_feeds = []
+    feed_list = []
+    if CONFIG is not None and 'feeds' in CONFIG:
+        feed_list = CONFIG['feeds']
+    if not feed_list:
+        feed_list.append({"url": ARCH_NEWS})
+    for feed_item in feed_list:
+        if 'url' not in feed_item:
+            continue
+        url = feed_item['url']
+        if 'title-key' in feed_item:
+            title_key = feed_item['title-key']
+        else:
+            title_key = 'title'
+        if 'body-key' in feed_item:
+            body_key = feed_item['body-key']
+        else:
+            body_key = 'body'
+        if 'timestamp-key' in feed_item:
+            timestamp_key = feed_item['timestamp-key']
+        else:
+            timestamp_key = 'published'
+        component_feeds.append({'feed': None,
+                                'keys': {
+                                    'url': url,
+                                    'title-key': title_key,
+                                    'body-key': body_key,
+                                    'timestamp-key': timestamp_key
+                                    }})
+    return component_feeds
+
+def build_feed(cached_components, request_components):
+    """ Creates the informant feed from the given 'cached_components' plus
+    whatever is returned from requesting each of the given 'request_components'.
+
+    This should work in a case where some feeds are valid in the cache but
+    others are not, the valid items will be already in 'cached_components', this
+    function just needs to query all items in 'component_feeds' and parse all
+    components into one list.
+
+    Returns the informant feed.
+    """
+    feed = []
+    for idx, feed_item in enumerate(request_components):
+        url = feed_item['keys']['url']
+        cmp_feed = feedparser.parse(url)
+        if cmp_feed.bozo:
+            err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(cmp_feed.bozo_exception))
+            if RFP:
+                pacman_msg("Exiting so we don't block your pacman upgrade")
+                sys.exit(0)
+            sys.exit(255)
+        request_components[idx]['feed'] = cmp_feed
+    for component in cached_components + request_components:
+        for item in component['feed'].entries:
+            title_key = component['keys']['title-key']
+            body_key = component['keys']['body-key']
+            timestamp_key = component['keys']['timestamp-key']
+            title = item[title_key]
+            body = item[body_key]
+            timestamp = date_parser.parse(item[timestamp_key])
+            feed.append({'title': title, 'body': body, 'timestamp': timestamp})
+    write_cache(feed, request_components)
+    return sorted(feed, key=lambda k: k['timestamp'], reverse=True)
 
 def run():
     """ The main function.
@@ -316,43 +410,17 @@ def run():
     if ARGV.get(DEBUG_OPT):
         err_print(ARGV)
 
-    if cache_is_valid():
+    cache_response = cache_is_valid()
+    if isinstance(cache_response, bool) and cache_response:
+        # True return from cache, feed is good
         feed = CACHE['feed']
+    elif isinstance(cache_response, bool):
+        # False return from cache, build whole feed
+        component_feeds = parse_components()
+        feed = build_feed([], component_feeds)
     else:
-        feed = []
-        for feed_item in CONFIG['feeds']:
-            if 'url' not in feed_item:
-                continue
-            url = feed_item['url']
-            if 'title-key' in feed_item:
-                title_key = feed_item['title-key']
-            else:
-                title_key = 'title'
-            if 'body-key' in feed_item:
-                body_key = feed_item['body-key']
-            else:
-                body_key = 'body'
-            if 'timestamp-key' in feed_item:
-                timestamp_key = feed_item['timestamp-key']
-            else:
-                timestamp_key = 'timestamp'
-            f = feedparser.parse(url)
-            if f.bozo:
-                err_print(RED + 'ERROR: ' + CLEAR + 'failed checking feed: {}'.format(f.bozo_exception))
-                if RFP:
-                    pacman_msg("Exiting so we don't block your pacman upgrade")
-                    sys.exit(0)
-                sys.exit(255)
-            for item in f.entries:
-                title = item[title_key]
-                body = item[body_key]
-                timestamp = date_parser.parse(item[timestamp_key])
-                feed.append({'title': title, 'body': body, 'timestamp': timestamp})
-        if not feed:
-            pass #TODO
-        else:
-            feed = sorted(feed, key=lambda k: k['timestamp'], reverse=True)
-        write_cache(feed)
+        # cache_response is partial
+        feed = build_feed(cache_response[0], cache_response[1])
 
     if ARGV.get(CHECK_CMD):
         check_cmd(feed)
@@ -365,7 +433,10 @@ if __name__ == '__main__':
     ARGV = docopt.docopt(__doc__, version='informant v0.3.0')
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
-    with open(CONFIG_FILE, 'r') as cfg:
-        CONFIG = json.loads(cfg.read())
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as cfg:
+            CONFIG = json.loads(cfg.read())
+    else:
+        CONFIG = None
     run()
     sys.exit()
