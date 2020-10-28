@@ -43,15 +43,13 @@ import shutil
 import subprocess
 import sys
 import textwrap
-import requests
 
 # external
 import docopt
-import feedparser
 import html2text
-from dateutil import parser as date_parser
-from cachecontrol import CacheControl
-from cachecontrol.caches import FileCache
+
+# local
+from feed import Feed
 
 CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
@@ -158,7 +156,7 @@ def save_datfile():
     if ARGV.get(DEBUG_OPT):
         return
     filename = get_save_name()
-    datfile_obj = READLIST
+    datfile_obj = (CACHE, READLIST)
     try:
         # then open as write to save updated list
         with open(filename, 'wb') as pickle_file:
@@ -290,78 +288,17 @@ def read_cmd(feed):
                 else:
                     print('No more unread items')
 
-def parse_components():
-    """ Parse CONFIG into a list of component feeds """
-    component_feeds = []
-    feed_list = []
-    if CONFIG is not None and 'feeds' in CONFIG:
-        feed_list = CONFIG['feeds']
-    if not feed_list:
-        feed_list.append({"url": ARCH_NEWS})
-    for feed_item in feed_list:
-        if 'url' not in feed_item:
-            continue
-        url = feed_item['url']
-        if 'title-key' in feed_item:
-            title_key = feed_item['title-key']
-        else:
-            title_key = 'title'
-        if 'body-key' in feed_item:
-            body_key = feed_item['body-key']
-        else:
-            body_key = 'body'
-        if 'timestamp-key' in feed_item:
-            timestamp_key = feed_item['timestamp-key']
-        else:
-            timestamp_key = 'published'
-        component_feeds.append({'feed': None,
-                                'keys': {
-                                    'url': url,
-                                    'title-key': title_key,
-                                    'body-key': body_key,
-                                    'timestamp-key': timestamp_key
-                                    }})
-    return component_feeds
-
-def build_feed(components):
-    """ Creates the informant feed from the given 'cached_components' plus
-    whatever is returned from requesting each of the given 'request_components'.
-
-    This should work in a case where some feeds are valid in the cache but
-    others are not, the valid items will be already in 'cached_components', this
-    function just needs to query all items in 'component_feeds' and parse all
-    components into one list.
-
-    Returns the informant feed.
-    """
-    informant_feed = []
-    for component in components:
-        for item in component['feed'].entries:
-            title_key = component['keys']['title-key']
-            body_key = component['keys']['body-key']
-            timestamp_key = component['keys']['timestamp-key']
-            title = item[title_key]
-            body = item[body_key]
-            timestamp = date_parser.parse(item[timestamp_key])
-            informant_feed.append({'title': title, 'body': body, 'timestamp': timestamp})
-    return sorted(informant_feed, key=lambda k: k['timestamp'], reverse=True)
-
 def run():
     """ The main function.
     Check given arguments get feed and run given command. """
     if ARGV.get(DEBUG_OPT):
         err_print(ARGV)
 
-    components = parse_components()
+    feed = []
+    for config_feed in CONFIG['feeds']:
+        feed = feed + Feed(config_feed).entries
 
-    for component in components:
-        if ARGV.get(NOCACHE_OPT):
-            component['feed'] = feedparser.parse(component['keys']['url'])
-        else:
-            session = CacheControl(requests.Session(), cache=FileCache('.cache'))
-            component['feed'] = feedparser.parse(session.get(component['keys']['url']).content)
-
-    feed = build_feed(components)
+    feed = sorted(feed, key=lambda k: k['timestamp'], reverse=True)
 
     if ARGV.get(CHECK_CMD):
         check_cmd(feed)
