@@ -4,13 +4,13 @@
             "url": "https://archlinux.org/feeds/news",
             "title-key": "title",
             "body-key": "summary",
-            "ts-key": "published"
+            "timestamp-key": "published"
         },
         {
             "url": "https://bbs.archlinux32.org/extern.php?action=feed&fid=12&type=atom",
             "title-key": "title",
             "body-key": "summary",
-            "ts-key": "updated"
+            "timestamp-key": "updated"
         }
     ]
 }
