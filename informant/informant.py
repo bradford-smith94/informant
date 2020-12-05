@@ -51,6 +51,8 @@ import html2text
 # local
 from informant.feed import Feed
 
+__version__ = '0.3.0'
+
 CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 FILE_DEFAULT = '/var/cache/informant.dat'
@@ -307,8 +309,8 @@ def run():
     elif ARGV.get(READ_CMD):
         read_cmd(feed)
 
-if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.3.0')
+def main():
+    ARGV = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
     if os.path.exists(CONFIG_FILE):
@@ -318,3 +320,6 @@ if __name__ == '__main__':
         CONFIG = None
     run()
     sys.exit()
+
+if __name__ == '__main__':
+    main()
