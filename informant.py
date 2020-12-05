@@ -49,7 +49,7 @@ import docopt
 import html2text
 
 # local
-from feed import Feed
+from informant.feed import Feed
 
 CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
