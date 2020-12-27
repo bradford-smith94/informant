@@ -310,6 +310,7 @@ def run():
         read_cmd(feed)
 
 def main():
+    global ARGV, CACHE, CONFIG, READLIST, RFP
     ARGV = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()

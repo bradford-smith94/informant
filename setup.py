@@ -12,7 +12,8 @@ setup(
             'docopt',
             'feedparser',
             'python-dateutil',
-            'CacheControl'
+            'CacheControl',
+            'lockfile'
         ],
         entry_points={
             'console_scripts': [
