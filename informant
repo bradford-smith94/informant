@@ -311,7 +311,7 @@ def write_cache(feed):
         return
     CACHE['feed'] = feed
     CACHE['last-request'] = str(time.time())
-    CACHE['max-age'] = feed.headers['Cache-Control'].split('=')[1]
+    CACHE['max-age'] = feed.headers['cache-control'].split('=')[1]
     save_datfile()
 
 def run():
