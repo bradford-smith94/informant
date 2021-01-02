@@ -311,6 +311,7 @@ def write_cache(feed):
         return
     CACHE['feed'] = feed
     CACHE['last-request'] = str(time.time())
+    feed.headers = dict((k.lower(), v) for k, v in feed.headers.items())
     CACHE['max-age'] = feed.headers['cache-control'].split('=')[1]
     save_datfile()
 
@@ -340,7 +341,7 @@ def run():
         read_cmd(feed)
 
 if __name__ == '__main__':
-    ARGV = docopt.docopt(__doc__, version='informant v0.3.1')
+    ARGV = docopt.docopt(__doc__, version='informant v0.3.2')
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
     run()
