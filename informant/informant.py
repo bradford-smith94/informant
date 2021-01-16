@@ -50,6 +50,7 @@ import html2text
 
 # local
 from informant.feed import Feed
+import informant.ui as ui
 
 __version__ = '0.3.0'
 
@@ -82,41 +83,13 @@ UNREAD_OPT = '--unread'
 ITEM_ARG = '<item>'
 READALL_OPT = '--all'
 
-def err_print(*args, **kwargs):
-    """ Same as builtin print but output to stderr. """
-    print(*args, file=sys.stderr, **kwargs)
-
-def pacman_msg(*args, **kwargs):
-    """ Same as print but include informant preamble so the message is clear in pacman. """
-    msg = YELLOW + ':: informant: ' + CLEAR
-    for arg in args:
-        msg += arg
-    print(msg, **kwargs)
-
-def prompt_yes_no(question, default):
-    """ Print 'question' to user with (y/n) and 'default' being the
-    response for blank input.
-    """
-    again = 'Unknown response.'
-    if default.lower() in ('y', 'yes'):
-        options = '(Y/n): '
-    elif default.lower() in ('n', 'no'):
-        options = '(y/N): '
-
-    response = input(' '.join((question, options))).lower()
-    while response not in ('y', 'yes', 'n', 'no', ''):
-        response = input(' '.join((again, question, options))).lower()
-    if response == '':
-        return default
-    return response
-
 def running_from_pacman():
     """ Return True if the parent process is pacman """
     ppid = os.getppid()
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
     if ARGV.get(DEBUG_OPT):
-        err_print('informant: running from: {}'.format(p_name))
+        ui.debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
 
 
@@ -130,7 +103,7 @@ def get_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
     containing the cache, and the second element the list of read items. """
     if ARGV.get(DEBUG_OPT):
-        err_print('Getting datfile from "{}"'.format(filename))
+        ui.debug_print('Getting datfile from "{}"'.format(filename))
 
     try:
         with open(filename, 'rb') as pickle_file:
@@ -146,7 +119,7 @@ def get_datfile(filename):
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
     if ARGV.get(DEBUG_OPT):
-        err_print(READLIST)
+        ui.debug_print(READLIST)
     title = entry['title']
     date = entry['timestamp']
     if str(date.timestamp()) + '|' + title in READLIST:
@@ -165,8 +138,8 @@ def save_datfile():
             pickle.dump(datfile_obj, pickle_file)
             pickle_file.close()
     except PermissionError:
-        err_print(RED + 'ERROR: ' + CLEAR + 'Unable to save read information, \
-please re-run with correct permissions to access "{}".'.format(filename))
+        ui.err_print('Unable to save read information, please re-run with \
+correct permissions to access "{}".'.format(filename))
         sys.exit(255)
 
 def mark_as_read(entry):
@@ -233,16 +206,16 @@ def check_cmd(feed):
             unread_items.append(entry)
     if unread == 1:
         if RFP:
-            pacman_msg('Stopping upgrade to print news')
+            ui.pacman_msg('Stopping upgrade to print news')
         pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0])
         if RFP:
-            pacman_msg('You can re-run your pacman command to complete the upgrade')
+            ui.pacman_msg('You can re-run your pacman command to complete the upgrade')
     elif unread > 1:
         print('There are {:d} unread news items! Use informant to read \
 them.'.format(unread))
         if RFP:
-            pacman_msg('Run `informant read` before re-running your pacman command')
+            ui.pacman_msg('Run `informant read` before re-running your pacman command')
     sys.exit(unread)
 
 def list_cmd(feed):
@@ -284,7 +257,7 @@ def read_cmd(feed):
                 pretty_print_item(entry)
                 mark_as_read(entry)
                 if entry is not unread_entries[-1]:
-                    read_next = prompt_yes_no('Read next item?', 'yes')
+                    read_next = ui.prompt_yes_no('Read next item?', 'yes')
                     if read_next in ('n', 'no'):
                         break
                 else:
@@ -294,7 +267,7 @@ def run():
     """ The main function.
     Check given arguments get feed and run given command. """
     if ARGV.get(DEBUG_OPT):
-        err_print(ARGV)
+        ui.debug_print(ARGV)
 
     feed = []
     for config_feed in CONFIG['feeds']:
