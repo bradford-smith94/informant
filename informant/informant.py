@@ -84,16 +84,6 @@ UNREAD_OPT = '--unread'
 ITEM_ARG = '<item>'
 READALL_OPT = '--all'
 
-def running_from_pacman():
-    """ Return True if the parent process is pacman """
-    argv = InformantConfig.get_argv()
-    ppid = os.getppid()
-    p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
-    p_name = p_name.decode().rstrip()
-    if argv.get(DEBUG_OPT):
-        ui.debug_print('informant: running from: {}'.format(p_name))
-    return p_name == 'pacman'
-
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
@@ -205,6 +195,7 @@ def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
     unread. If there is only one unread item, print it out and mark it as read.
     Also, exit the program with return code matching the unread count. """
+    running_from_pacman = ui.running_from_pacman()
     unread = 0
     unread_items = []
     for entry in feed:
@@ -212,16 +203,16 @@ def check_cmd(feed):
             unread += 1
             unread_items.append(entry)
     if unread == 1:
-        if RFP:
+        if running_from_pacman:
             ui.pacman_msg('Stopping upgrade to print news')
         pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0])
-        if RFP:
+        if running_from_pacman:
             ui.pacman_msg('You can re-run your pacman command to complete the upgrade')
     elif unread > 1:
         print('There are {:d} unread news items! Use informant to read \
 them.'.format(unread))
-        if RFP:
+        if running_from_pacman:
             ui.pacman_msg('Run `informant read` before re-running your pacman command')
     sys.exit(unread)
 
@@ -294,11 +285,10 @@ def run():
         read_cmd(feed)
 
 def main():
-    global CACHE, READLIST, RFP
+    global CACHE, READLIST
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
     CACHE, READLIST = get_datfile(get_save_name())
-    RFP = running_from_pacman()
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as cfg:
             config = json.loads(cfg.read())

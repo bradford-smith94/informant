@@ -1,4 +1,7 @@
+import os
 import sys
+
+from informant.config import InformantConfig
 
 # colors
 RED = '\033[0;31m'
@@ -44,4 +47,14 @@ def prompt_yes_no(question, default):
     if response == '':
         return default
     return response
+
+def running_from_pacman():
+    """ Return True if the parent process is pacman """
+    argv = InformantConfig.get_argv()
+    ppid = os.getppid()
+    p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
+    p_name = p_name.decode().rstrip()
+    if argv.get(DEBUG_OPT):
+        ui.debug_print('informant: running from: {}'.format(p_name))
+    return p_name == 'pacman'
 
