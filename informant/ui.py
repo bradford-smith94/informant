@@ -14,6 +14,8 @@ import html2text
 
 from informant.config import InformantConfig
 
+RAW_OPT = '--raw'
+
 def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr with red color and "ERROR"
     preamble.
@@ -59,11 +61,11 @@ def prompt_yes_no(question, default):
 
 def running_from_pacman():
     """ Return True if the parent process is pacman """
-    argv = InformantConfig().get_argv()
+    debug = InformantConfig().get_argv_debug()
     ppid = os.getppid()
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
-    if argv.get(DEBUG_OPT):
+    if debug:
         ui.debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
 
@@ -76,7 +78,7 @@ def pretty_print_item(item):
     body = item['body']
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
-    timestamp = item['timestamp']
+    timestamp = str(item['timestamp'])
     if not argv.get(RAW_OPT):
         #if not using raw also bold title
         title = bold + title + clear

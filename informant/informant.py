@@ -76,21 +76,23 @@ READALL_OPT = '--all'
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
     argv = InformantConfig().get_argv()
+    readlist = InformantConfig().readlist
     if argv.get(DEBUG_OPT):
-        ui.debug_print(READLIST)
+        ui.debug_print(readlist)
     title = entry['title']
     date = entry['timestamp']
-    if str(date.timestamp()) + '|' + title in READLIST:
+    if str(date.timestamp()) + '|' + title in readlist:
         return True
     return False
 
 def mark_as_read(entry):
     """ Save the given entry to mark it as read. """
+    readlist = InformantConfig().readlist
     if has_been_read(entry):
         return
     title = entry['title']
     date = entry['timestamp']
-    READLIST.append(str(date.timestamp()) + '|' + title)
+    readlist.append(str(date.timestamp()) + '|' + title)
     fs.save_datfile()
 
 def check_cmd(feed):
@@ -187,10 +189,11 @@ def run():
         read_cmd(feed)
 
 def main():
-    global CACHE, READLIST
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
-    CACHE, READLIST = fs.get_datfile(fs.get_save_name())
+    cache, readlist = fs.get_datfile(fs.get_save_name())
+    InformantConfig().cache = cache
+    InformantConfig().readlist = readlist
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as cfg:
             config = json.loads(cfg.read())

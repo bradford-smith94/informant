@@ -5,6 +5,9 @@ This module contains helpers to manage arguments, options and configuration
 settings provided to Informant.
 """
 
+DEBUG_OPT = '--debug'
+FILE_OPT = '--file'
+
 class Singleton(type):
     """ A Singleton class to be used as a base """
     _instances = {}
@@ -26,12 +29,20 @@ class InformantConfig(metaclass=Singleton):
                 'CLEAR': '\033[0m',
                 'BOLD': '\033[1m'
         }
+        self.cache = None
+        self.readlist = None
 
     def set_argv(self, args):
         self.argv = args
 
-    def get_argv(self, ):
+    def get_argv(self):
         return self.argv
+
+    def get_argv_debug(self):
+        return self.argv.get(DEBUG_OPT)
+
+    def get_argv_savefile(self):
+        return self.argv.get(FILE_OPT)
 
     def set_config(self, config):
         self.config = config

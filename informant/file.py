@@ -14,16 +14,16 @@ FILE_DEFAULT = '/var/cache/informant.dat'
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
-    argv = InformantConfig().get_argv()
-    if argv.get(FILE_OPT):
-        return argv.get(FILE_OPT)
+    file_opt = InformantConfig().get_argv_savefile()
+    if file_opt:
+        return file_opt
     return FILE_DEFAULT
 
 def get_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
     containing the cache, and the second element the list of read items. """
-    argv = InformantConfig().get_argv()
-    if argv.get(DEBUG_OPT):
+    debug = InformantConfig().get_argv_debug()
+    if debug:
         ui.debug_print('Getting datfile from "{}"'.format(filename))
 
     try:
@@ -39,11 +39,13 @@ def get_datfile(filename):
 
 def save_datfile():
     """ Save the datfile with cache and readlist """
-    argv = InformantConfig().get_argv()
-    if argv.get(DEBUG_OPT):
+    debug = InformantConfig().get_argv_debug()
+    cache = InformantConfig().cache
+    readlist = InformantConfig().readlist
+    if debug:
         return
     filename = get_save_name()
-    datfile_obj = (CACHE, READLIST)
+    datfile_obj = (cache, readlist)
     try:
         # then open as write to save updated list
         with open(filename, 'wb') as pickle_file:
