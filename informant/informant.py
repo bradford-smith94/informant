@@ -45,6 +45,7 @@ import docopt
 
 # local
 from informant.config import InformantConfig
+import informant.entry as en
 from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
@@ -73,28 +74,6 @@ UNREAD_OPT = '--unread'
 ITEM_ARG = '<item>'
 READALL_OPT = '--all'
 
-def has_been_read(entry):
-    """ Check if the given entry has been read and return True or False. """
-    argv = InformantConfig().get_argv()
-    readlist = InformantConfig().readlist
-    if argv.get(DEBUG_OPT):
-        ui.debug_print(readlist)
-    title = entry['title']
-    date = entry['timestamp']
-    if str(date.timestamp()) + '|' + title in readlist:
-        return True
-    return False
-
-def mark_as_read(entry):
-    """ Save the given entry to mark it as read. """
-    readlist = InformantConfig().readlist
-    if has_been_read(entry):
-        return
-    title = entry['title']
-    date = entry['timestamp']
-    readlist.append(str(date.timestamp()) + '|' + title)
-    fs.save_datfile()
-
 def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
     unread. If there is only one unread item, print it out and mark it as read.
@@ -103,14 +82,15 @@ def check_cmd(feed):
     unread = 0
     unread_items = []
     for entry in feed:
-        if not has_been_read(entry):
+        if not en.has_been_read(entry):
             unread += 1
             unread_items.append(entry)
     if unread == 1:
         if running_from_pacman:
             ui.pacman_msg('Stopping upgrade to print news')
         ui.pretty_print_item(unread_items[0])
-        mark_as_read(unread_items[0])
+        en.mark_as_read(unread_items[0])
+        fs.save_datfile()
         if running_from_pacman:
             ui.pacman_msg('You can re-run your pacman command to complete the upgrade')
     elif unread > 1:
@@ -130,7 +110,7 @@ def list_cmd(feed):
     index = 0
     for entry in feed_list:
         if not argv.get(UNREAD_OPT) \
-        or (argv.get(UNREAD_OPT) and not has_been_read(entry)):
+        or (argv.get(UNREAD_OPT) and not en.has_been_read(entry)):
             print(ui.format_list_item(entry, index))
             index += 1
 
@@ -139,7 +119,7 @@ def read_cmd(feed):
     argv = InformantConfig().get_argv()
     if argv.get(READALL_OPT):
         for entry in feed:
-            mark_as_read(entry)
+            en.mark_as_read(entry)
     else:
         if argv[ITEM_ARG]:
             try:
@@ -151,21 +131,22 @@ def read_cmd(feed):
                         break
                 #NOTE: this will read the oldest unread item if no matches are found
             ui.pretty_print_item(entry)
-            mark_as_read(entry)
+            en.mark_as_read(entry)
         else:
             unread_entries = list()
             for entry in feed:
-                if not has_been_read(entry):
+                if not en.has_been_read(entry):
                     unread_entries.insert(0, entry)
             for entry in unread_entries:
                 ui.pretty_print_item(entry)
-                mark_as_read(entry)
+                en.mark_as_read(entry)
                 if entry is not unread_entries[-1]:
                     read_next = ui.prompt_yes_no('Read next item?', 'yes')
                     if read_next in ('n', 'no'):
                         break
                 else:
                     print('No more unread items')
+    fs.save_datfile()
 
 def run():
     """ The main function.

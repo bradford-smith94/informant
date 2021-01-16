@@ -13,6 +13,7 @@ import textwrap
 import html2text
 
 from informant.config import InformantConfig
+import informant.entry as en
 
 RAW_OPT = '--raw'
 
@@ -98,7 +99,7 @@ def format_list_item(entry, index):
     heading = str(index) + ': ' + entry['title']
     wrapped_heading = textwrap.wrap(heading, wrap_width)
     padding = terminal_width - len(wrapped_heading[0] + str(entry['timestamp']))
-    if has_been_read(entry):
+    if en.has_been_read(entry):
         return (
             wrapped_heading[0] +
             ' ' * (padding) +
