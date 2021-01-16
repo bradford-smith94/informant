@@ -49,6 +49,7 @@ import docopt
 import html2text
 
 # local
+from informant.config import InformantConfig
 from informant.feed import Feed
 import informant.ui as ui
 
@@ -85,24 +86,27 @@ READALL_OPT = '--all'
 
 def running_from_pacman():
     """ Return True if the parent process is pacman """
+    argv = InformantConfig.get_argv()
     ppid = os.getppid()
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
-    if ARGV.get(DEBUG_OPT):
+    if argv.get(DEBUG_OPT):
         ui.debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
 
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
-    if ARGV.get(FILE_OPT):
-        return ARGV.get(FILE_OPT)
+    argv = InformantConfig.get_argv()
+    if argv.get(FILE_OPT):
+        return argv.get(FILE_OPT)
     return FILE_DEFAULT
 
 def get_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
     containing the cache, and the second element the list of read items. """
-    if ARGV.get(DEBUG_OPT):
+    argv = InformantConfig.get_argv()
+    if argv.get(DEBUG_OPT):
         ui.debug_print('Getting datfile from "{}"'.format(filename))
 
     try:
@@ -118,7 +122,8 @@ def get_datfile(filename):
 
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
-    if ARGV.get(DEBUG_OPT):
+    argv = InformantConfig.get_argv()
+    if argv.get(DEBUG_OPT):
         ui.debug_print(READLIST)
     title = entry['title']
     date = entry['timestamp']
@@ -128,7 +133,8 @@ def has_been_read(entry):
 
 def save_datfile():
     """ Save the datfile with cache and readlist """
-    if ARGV.get(DEBUG_OPT):
+    argv = InformantConfig.get_argv()
+    if argv.get(DEBUG_OPT):
         return
     filename = get_save_name()
     datfile_obj = (CACHE, READLIST)
@@ -155,10 +161,11 @@ def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
     nicer. If the '--raw' option has been provided then the markup will not be
     replaced. """
+    argv = InformantConfig.get_argv()
     title = item['title']
     body = item['body']
     timestamp = item['timestamp']
-    if not ARGV.get(RAW_OPT):
+    if not argv.get(RAW_OPT):
         #if not using raw also bold title
         title = BOLD + title + CLEAR
         h2t = html2text.HTML2Text()
@@ -220,26 +227,28 @@ them.'.format(unread))
 
 def list_cmd(feed):
     """ Run the list command. Print out a list of recent news item titles. """
-    if ARGV.get(REV_OPT):
+    argv = InformantConfig.get_argv()
+    if argv.get(REV_OPT):
         feed_list = reversed(feed)
     else:
         feed_list = feed
     index = 0
     for entry in feed_list:
-        if not ARGV.get(UNREAD_OPT) \
-        or (ARGV.get(UNREAD_OPT) and not has_been_read(entry)):
+        if not argv.get(UNREAD_OPT) \
+        or (argv.get(UNREAD_OPT) and not has_been_read(entry)):
             print(format_list_item(entry, index))
             index += 1
 
 def read_cmd(feed):
     """ Run the read command. Print news items and mark them as read. """
-    if ARGV.get(READALL_OPT):
+    argv = InformantConfig.get_argv()
+    if argv.get(READALL_OPT):
         for entry in feed:
             mark_as_read(entry)
     else:
-        if ARGV[ITEM_ARG]:
+        if argv[ITEM_ARG]:
             try:
-                item = int(ARGV[ITEM_ARG])
+                item = int(argv[ITEM_ARG])
                 entry = feed[item]
             except ValueError:
                 for entry in feed:
@@ -266,32 +275,34 @@ def read_cmd(feed):
 def run():
     """ The main function.
     Check given arguments get feed and run given command. """
-    if ARGV.get(DEBUG_OPT):
-        ui.debug_print(ARGV)
+    argv = InformantConfig.get_argv()
+    config = InformantConfig.get_config()
+    if argv.get(DEBUG_OPT):
+        ui.debug_print(argv)
 
     feed = []
-    for config_feed in CONFIG['feeds']:
+    for config_feed in config['feeds']:
         feed = feed + Feed(config_feed).entries
 
     feed = sorted(feed, key=lambda k: k['timestamp'], reverse=True)
 
-    if ARGV.get(CHECK_CMD):
+    if argv.get(CHECK_CMD):
         check_cmd(feed)
-    elif ARGV.get(LIST_CMD):
+    elif argv.get(LIST_CMD):
         list_cmd(feed)
-    elif ARGV.get(READ_CMD):
+    elif argv.get(READ_CMD):
         read_cmd(feed)
 
 def main():
-    global ARGV, CACHE, CONFIG, READLIST, RFP
-    ARGV = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
+    global CACHE, READLIST, RFP
+    argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
+    InformantConfig().set_argv(argv)
     CACHE, READLIST = get_datfile(get_save_name())
     RFP = running_from_pacman()
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as cfg:
-            CONFIG = json.loads(cfg.read())
-    else:
-        CONFIG = None
+            config = json.loads(cfg.read())
+            InformantConfig().set_config(config)
     run()
     sys.exit()
 
