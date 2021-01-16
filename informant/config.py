@@ -5,7 +5,7 @@ This module contains helpers to manage arguments, options and configuration
 settings provided to Informant.
 """
 
-class Singleton():
+class Singleton(type):
     """ A Singleton class to be used as a base """
     _instances = {}
 
@@ -27,14 +27,14 @@ class InformantConfig(metaclass=Singleton):
                 'BOLD': '\033[1m'
         }
 
-    def set_argv(args):
+    def set_argv(self, args):
         self.argv = args
 
-    def get_argv():
+    def get_argv(self, ):
         return self.argv
 
-    def set_config(config):
+    def set_config(self, config):
         self.config = config
 
-    def get_config():
+    def get_config(self):
         return self.config

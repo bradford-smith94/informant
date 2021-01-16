@@ -75,7 +75,7 @@ READALL_OPT = '--all'
 
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(DEBUG_OPT):
         ui.debug_print(READLIST)
     title = entry['title']
@@ -120,7 +120,7 @@ them.'.format(unread))
 
 def list_cmd(feed):
     """ Run the list command. Print out a list of recent news item titles. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(REV_OPT):
         feed_list = reversed(feed)
     else:
@@ -134,7 +134,7 @@ def list_cmd(feed):
 
 def read_cmd(feed):
     """ Run the read command. Print news items and mark them as read. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(READALL_OPT):
         for entry in feed:
             mark_as_read(entry)
@@ -168,8 +168,8 @@ def read_cmd(feed):
 def run():
     """ The main function.
     Check given arguments get feed and run given command. """
-    argv = InformantConfig.get_argv()
-    config = InformantConfig.get_config()
+    argv = InformantConfig().get_argv()
+    config = InformantConfig().get_config()
     if argv.get(DEBUG_OPT):
         ui.debug_print(argv)
 

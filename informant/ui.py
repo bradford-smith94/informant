@@ -18,8 +18,8 @@ def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr with red color and "ERROR"
     preamble.
     """
-    red = InformantConfig.colors['RED']
-    clear = InformantConfig.colors['CLEAR']
+    red = InformantConfig().colors['RED']
+    clear = InformantConfig().colors['CLEAR']
     msg = red + 'ERROR: ' + clear
     for arg in args:
         msg += arg
@@ -33,8 +33,8 @@ def pacman_msg(*args, **kwargs):
     """ Same as print but include yellow color and "informant" preamble so the
     message is clear in pacman.
     """
-    yellow = InformantConfig.colors['YELLOW']
-    clear = InformantConfig.colors['CLEAR']
+    yellow = InformantConfig().colors['YELLOW']
+    clear = InformantConfig().colors['CLEAR']
     msg = yellow + ':: informant: ' + clear
     for arg in args:
         msg += arg
@@ -59,7 +59,7 @@ def prompt_yes_no(question, default):
 
 def running_from_pacman():
     """ Return True if the parent process is pacman """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     ppid = os.getppid()
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
@@ -71,11 +71,11 @@ def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
     nicer. If the '--raw' option has been provided then the markup will not be
     replaced. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     title = item['title']
     body = item['body']
-    bold = InformantConfig.colors['BOLD']
-    clear = InformantConfig.colors['CLEAR']
+    bold = InformantConfig().colors['BOLD']
+    clear = InformantConfig().colors['CLEAR']
     timestamp = item['timestamp']
     if not argv.get(RAW_OPT):
         #if not using raw also bold title
@@ -89,8 +89,8 @@ def pretty_print_item(item):
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
     right-aligned timestamp. Unread items are bolded"""
-    bold = InformantConfig.colors['BOLD']
-    clear = InformantConfig.colors['CLEAR']
+    bold = InformantConfig().colors['BOLD']
+    clear = InformantConfig().colors['CLEAR']
     terminal_width = shutil.get_terminal_size().columns
     wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
     heading = str(index) + ': ' + entry['title']

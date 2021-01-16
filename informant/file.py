@@ -14,7 +14,7 @@ FILE_DEFAULT = '/var/cache/informant.dat'
 
 def get_save_name():
     """ Return the name of the file to save read information to. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(FILE_OPT):
         return argv.get(FILE_OPT)
     return FILE_DEFAULT
@@ -22,7 +22,7 @@ def get_save_name():
 def get_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
     containing the cache, and the second element the list of read items. """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(DEBUG_OPT):
         ui.debug_print('Getting datfile from "{}"'.format(filename))
 
@@ -39,7 +39,7 @@ def get_datfile(filename):
 
 def save_datfile():
     """ Save the datfile with cache and readlist """
-    argv = InformantConfig.get_argv()
+    argv = InformantConfig().get_argv()
     if argv.get(DEBUG_OPT):
         return
     filename = get_save_name()
