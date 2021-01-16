@@ -38,7 +38,6 @@ Options:
 # builtins
 import json
 import os
-import pickle
 import shutil
 import subprocess
 import sys
@@ -51,13 +50,13 @@ import html2text
 # local
 from informant.config import InformantConfig
 from informant.feed import Feed
+import informant.file as fs
 import informant.ui as ui
 
 __version__ = '0.3.0'
 
 CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
-FILE_DEFAULT = '/var/cache/informant.dat'
 
 # colors
 RED = '\033[0;31m'
@@ -84,32 +83,6 @@ UNREAD_OPT = '--unread'
 ITEM_ARG = '<item>'
 READALL_OPT = '--all'
 
-
-def get_save_name():
-    """ Return the name of the file to save read information to. """
-    argv = InformantConfig.get_argv()
-    if argv.get(FILE_OPT):
-        return argv.get(FILE_OPT)
-    return FILE_DEFAULT
-
-def get_datfile(filename):
-    """ Return a datfile, which should be a tuple with the first element
-    containing the cache, and the second element the list of read items. """
-    argv = InformantConfig.get_argv()
-    if argv.get(DEBUG_OPT):
-        ui.debug_print('Getting datfile from "{}"'.format(filename))
-
-    try:
-        with open(filename, 'rb') as pickle_file:
-            try:
-                (cache, readlist) = pickle.load(pickle_file)
-                pickle_file.close()
-            except (EOFError, ValueError):
-                (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
-    except (FileNotFoundError, PermissionError):
-        (cache, readlist) = ({"feed": None, "components": {}}, [])
-    return (cache, readlist)
-
 def has_been_read(entry):
     """ Check if the given entry has been read and return True or False. """
     argv = InformantConfig.get_argv()
@@ -121,23 +94,6 @@ def has_been_read(entry):
         return True
     return False
 
-def save_datfile():
-    """ Save the datfile with cache and readlist """
-    argv = InformantConfig.get_argv()
-    if argv.get(DEBUG_OPT):
-        return
-    filename = get_save_name()
-    datfile_obj = (CACHE, READLIST)
-    try:
-        # then open as write to save updated list
-        with open(filename, 'wb') as pickle_file:
-            pickle.dump(datfile_obj, pickle_file)
-            pickle_file.close()
-    except PermissionError:
-        ui.err_print('Unable to save read information, please re-run with \
-correct permissions to access "{}".'.format(filename))
-        sys.exit(255)
-
 def mark_as_read(entry):
     """ Save the given entry to mark it as read. """
     if has_been_read(entry):
@@ -145,7 +101,7 @@ def mark_as_read(entry):
     title = entry['title']
     date = entry['timestamp']
     READLIST.append(str(date.timestamp()) + '|' + title)
-    save_datfile()
+    fs.save_datfile()
 
 def pretty_print_item(item):
     """ Print out the given feed item, replacing some markup to make it look
@@ -288,7 +244,7 @@ def main():
     global CACHE, READLIST
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
-    CACHE, READLIST = get_datfile(get_save_name())
+    CACHE, READLIST = fs.get_datfile(fs.get_save_name())
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as cfg:
             config = json.loads(cfg.read())

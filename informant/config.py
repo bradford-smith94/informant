@@ -1,3 +1,10 @@
+"""
+informant/config.py
+
+This module contains helpers to manage arguments, options and configuration
+settings provided to Informant.
+"""
+
 class Singleton():
     """ A Singleton class to be used as a base """
     _instances = {}

@@ -1,3 +1,8 @@
+"""
+informant/ui.py
+
+This module contains User Interface related functions.
+"""
 import os
 import sys
 

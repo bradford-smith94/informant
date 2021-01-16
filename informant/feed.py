@@ -1,3 +1,9 @@
+"""
+informant/feed.py
+
+This module defines the structure of a newsfeed for Informant.
+"""
+
 import requests
 import feedparser
 from dateutil import parser as date_parser
@@ -32,7 +38,7 @@ class Feed:
 
     def build_feed(self):
         """
-        Abstract away any differences in feeds by using the parsed keys and 
+        Abstract away any differences in feeds by using the parsed keys and
         return an informant-friendly list of entries
         """
         entries = []
