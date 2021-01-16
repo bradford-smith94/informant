@@ -5,7 +5,12 @@ This module contains User Interface related functions.
 """
 
 import os
+import shutil
+import subprocess
 import sys
+import textwrap
+
+import html2text
 
 from informant.config import InformantConfig
 
@@ -61,4 +66,52 @@ def running_from_pacman():
     if argv.get(DEBUG_OPT):
         ui.debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
+
+def pretty_print_item(item):
+    """ Print out the given feed item, replacing some markup to make it look
+    nicer. If the '--raw' option has been provided then the markup will not be
+    replaced. """
+    argv = InformantConfig.get_argv()
+    title = item['title']
+    body = item['body']
+    bold = InformantConfig.colors['BOLD']
+    clear = InformantConfig.colors['CLEAR']
+    timestamp = item['timestamp']
+    if not argv.get(RAW_OPT):
+        #if not using raw also bold title
+        title = bold + title + clear
+        h2t = html2text.HTML2Text()
+        h2t.inline_links = False
+        h2t.body_width = 85
+        body = h2t.handle(body)
+    print(title + '\n' + timestamp + '\n\n' + body)
+
+def format_list_item(entry, index):
+    """ Returns a formatted string with the entry's index number, title, and
+    right-aligned timestamp. Unread items are bolded"""
+    bold = InformantConfig.colors['BOLD']
+    clear = InformantConfig.colors['CLEAR']
+    terminal_width = shutil.get_terminal_size().columns
+    wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
+    heading = str(index) + ': ' + entry['title']
+    wrapped_heading = textwrap.wrap(heading, wrap_width)
+    padding = terminal_width - len(wrapped_heading[0] + str(entry['timestamp']))
+    if has_been_read(entry):
+        return (
+            wrapped_heading[0] +
+            ' ' * (padding) +
+            str(entry['timestamp']) +
+            '\n'.join(wrapped_heading[1:])
+                )
+    else:
+        return (
+            bold +
+            wrapped_heading[0] +
+            clear +
+            ' ' * (padding) +
+            str(entry['timestamp']) +
+            bold +
+            '\n'.join(wrapped_heading[1:]) +
+            clear
+        )
 

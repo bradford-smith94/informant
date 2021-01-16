@@ -38,14 +38,10 @@ Options:
 # builtins
 import json
 import os
-import shutil
-import subprocess
 import sys
-import textwrap
 
 # external
 import docopt
-import html2text
 
 # local
 from informant.config import InformantConfig
@@ -97,54 +93,6 @@ def mark_as_read(entry):
     READLIST.append(str(date.timestamp()) + '|' + title)
     fs.save_datfile()
 
-def pretty_print_item(item):
-    """ Print out the given feed item, replacing some markup to make it look
-    nicer. If the '--raw' option has been provided then the markup will not be
-    replaced. """
-    argv = InformantConfig.get_argv()
-    title = item['title']
-    body = item['body']
-    bold = InformantConfig.colors['BOLD']
-    clear = InformantConfig.colors['CLEAR']
-    timestamp = item['timestamp']
-    if not argv.get(RAW_OPT):
-        #if not using raw also bold title
-        title = bold + title + clear
-        h2t = html2text.HTML2Text()
-        h2t.inline_links = False
-        h2t.body_width = 85
-        body = h2t.handle(body)
-    print(title + '\n' + timestamp + '\n\n' + body)
-
-def format_list_item(entry, index):
-    """ Returns a formatted string with the entry's index number, title, and
-    right-aligned timestamp. Unread items are bolded"""
-    bold = InformantConfig.colors['BOLD']
-    clear = InformantConfig.colors['CLEAR']
-    terminal_width = shutil.get_terminal_size().columns
-    wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
-    heading = str(index) + ': ' + entry['title']
-    wrapped_heading = textwrap.wrap(heading, wrap_width)
-    padding = terminal_width - len(wrapped_heading[0] + str(entry['timestamp']))
-    if has_been_read(entry):
-        return (
-            wrapped_heading[0] +
-            ' ' * (padding) +
-            str(entry['timestamp']) +
-            '\n'.join(wrapped_heading[1:])
-                )
-    else:
-        return (
-            bold +
-            wrapped_heading[0] +
-            clear +
-            ' ' * (padding) +
-            str(entry['timestamp']) +
-            bold +
-            '\n'.join(wrapped_heading[1:]) +
-            clear
-        )
-
 def check_cmd(feed):
     """ Run the check command. Check if there are any news items that are
     unread. If there is only one unread item, print it out and mark it as read.
@@ -159,7 +107,7 @@ def check_cmd(feed):
     if unread == 1:
         if running_from_pacman:
             ui.pacman_msg('Stopping upgrade to print news')
-        pretty_print_item(unread_items[0])
+        ui.pretty_print_item(unread_items[0])
         mark_as_read(unread_items[0])
         if running_from_pacman:
             ui.pacman_msg('You can re-run your pacman command to complete the upgrade')
@@ -181,7 +129,7 @@ def list_cmd(feed):
     for entry in feed_list:
         if not argv.get(UNREAD_OPT) \
         or (argv.get(UNREAD_OPT) and not has_been_read(entry)):
-            print(format_list_item(entry, index))
+            print(ui.format_list_item(entry, index))
             index += 1
 
 def read_cmd(feed):
@@ -200,7 +148,7 @@ def read_cmd(feed):
                     if entry.title == item:
                         break
                 #NOTE: this will read the oldest unread item if no matches are found
-            pretty_print_item(entry)
+            ui.pretty_print_item(entry)
             mark_as_read(entry)
         else:
             unread_entries = list()
@@ -208,7 +156,7 @@ def read_cmd(feed):
                 if not has_been_read(entry):
                     unread_entries.insert(0, entry)
             for entry in unread_entries:
-                pretty_print_item(entry)
+                ui.pretty_print_item(entry)
                 mark_as_read(entry)
                 if entry is not unread_entries[-1]:
                     read_next = ui.prompt_yes_no('Read next item?', 'yes')
