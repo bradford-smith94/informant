@@ -3,22 +3,19 @@ informant/ui.py
 
 This module contains User Interface related functions.
 """
+
 import os
 import sys
 
 from informant.config import InformantConfig
 
-# colors
-RED = '\033[0;31m'
-YELLOW = '\033[1;33m'
-CLEAR = '\033[0m'
-BOLD = '\033[1m'
-
 def err_print(*args, **kwargs):
     """ Same as builtin print but output to stderr with red color and "ERROR"
     preamble.
     """
-    msg = RED + 'ERROR: ' + CLEAR
+    red = InformantConfig.colors['RED']
+    clear = InformantConfig.colors['CLEAR']
+    msg = red + 'ERROR: ' + clear
     for arg in args:
         msg += arg
     print(*args, file=sys.stderr, **kwargs)
@@ -31,7 +28,9 @@ def pacman_msg(*args, **kwargs):
     """ Same as print but include yellow color and "informant" preamble so the
     message is clear in pacman.
     """
-    msg = YELLOW + ':: informant: ' + CLEAR
+    yellow = InformantConfig.colors['YELLOW']
+    clear = InformantConfig.colors['CLEAR']
+    msg = yellow + ':: informant: ' + clear
     for arg in args:
         msg += arg
     print(msg, **kwargs)

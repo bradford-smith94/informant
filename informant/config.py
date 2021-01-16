@@ -20,6 +20,12 @@ class InformantConfig(metaclass=Singleton):
     def __init__(self):
         self.argv = {}
         self.config = {}
+        self.colors = {
+                'RED': '\033[0;31m',
+                'YELLOW': '\033[1;33m',
+                'CLEAR': '\033[0m',
+                'BOLD': '\033[1m'
+        }
 
     def set_argv(args):
         self.argv = args

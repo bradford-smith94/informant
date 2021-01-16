@@ -58,12 +58,6 @@ __version__ = '0.3.0'
 CONFIG_FILE = 'config.json' #TODO rename for release
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
-# colors
-RED = '\033[0;31m'
-YELLOW = '\033[1;33m'
-CLEAR = '\033[0m'
-BOLD = '\033[1m'
-
 # commands
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
@@ -110,10 +104,12 @@ def pretty_print_item(item):
     argv = InformantConfig.get_argv()
     title = item['title']
     body = item['body']
+    bold = InformantConfig.colors['BOLD']
+    clear = InformantConfig.colors['CLEAR']
     timestamp = item['timestamp']
     if not argv.get(RAW_OPT):
         #if not using raw also bold title
-        title = BOLD + title + CLEAR
+        title = bold + title + clear
         h2t = html2text.HTML2Text()
         h2t.inline_links = False
         h2t.body_width = 85
@@ -123,6 +119,8 @@ def pretty_print_item(item):
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
     right-aligned timestamp. Unread items are bolded"""
+    bold = InformantConfig.colors['BOLD']
+    clear = InformantConfig.colors['CLEAR']
     terminal_width = shutil.get_terminal_size().columns
     wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
     heading = str(index) + ': ' + entry['title']
@@ -137,14 +135,14 @@ def format_list_item(entry, index):
                 )
     else:
         return (
-            BOLD +
+            bold +
             wrapped_heading[0] +
-            CLEAR +
+            clear +
             ' ' * (padding) +
             str(entry['timestamp']) +
-            BOLD +
+            bold +
             '\n'.join(wrapped_heading[1:]) +
-            CLEAR
+            clear
         )
 
 def check_cmd(feed):
