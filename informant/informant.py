@@ -62,7 +62,6 @@ READ_CMD = 'read'
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 RAW_OPT = '--raw'
-NOCACHE_OPT = '--no-cache'
 
 # 'list' options
 REV_OPT = '--reverse'
@@ -170,8 +169,7 @@ def run():
 def main():
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
-    cache, readlist = fs.read_datfile(InformantConfig().get_savefile())
-    InformantConfig().cache = cache
+    readlist = fs.read_datfile()
     InformantConfig().readlist = readlist
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as cfg:

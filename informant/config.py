@@ -7,8 +7,10 @@ settings provided to Informant.
 
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
+NOCACHE_OPT = '--no-cache'
 
-FILE_DEFAULT = '/var/cache/informant.dat'
+FILE_DEFAULT = '/var/lib/informant.dat'
+CACHE_DEFAULT = '/var/cache/informant'
 
 class Singleton(type):
     """ A Singleton class to be used as a base """
@@ -31,7 +33,6 @@ class InformantConfig(metaclass=Singleton):
                 'CLEAR': '\033[0m',
                 'BOLD': '\033[1m'
         }
-        self.cache = None
         self.readlist = None
 
     def set_argv(self, args):
@@ -42,6 +43,17 @@ class InformantConfig(metaclass=Singleton):
 
     def get_argv_debug(self):
         return self.argv.get(DEBUG_OPT)
+
+    def get_argv_use_cache(self):
+        """ Return True if we should use the cache, else False.
+        Providing the NOCACHE_OPT means that we should not use the cache.
+        """
+        if self.argv.get(NOCACHE_OPT):
+            return False
+        return True
+
+    def get_cachefile(self):
+        return CACHE_DEFAULT
 
     def get_savefile(self):
         if self.argv.get(FILE_OPT):

@@ -10,6 +10,7 @@ from dateutil import parser as date_parser
 from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
 
+from informant.config import InformantConfig
 from informant.entry import Entry
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
@@ -53,14 +54,9 @@ class Feed:
         return entries
 
     def fetch(self):
-        # TODO
-        # Here you would check if user has passed --no-cache or not
-        # Lots of ways we could do this from inside the Feed class
-        # For now we'll pretend cache is enabled
-        #
-        # if nocache:
-        #   return feedparser.parse(self.url)
-        # else:
-        session = CacheControl(requests.Session(), cache=FileCache('.cache'))
-
-        return feedparser.parse(session.get(self.url).content)
+        cachefile = InformantConfig().get_cachefile()
+        if InformantConfig().get_argv_use_cache():
+            session = CacheControl(requests.Session(), cache=FileCache(cachefile))
+            return feedparser.parse(session.get(self.url).content)
+        else:
+            return feedparser.parse(self.url)

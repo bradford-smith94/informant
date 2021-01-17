@@ -10,37 +10,38 @@ import sys
 from informant.config import InformantConfig
 import informant.ui as ui
 
-def read_datfile(filename):
-    """ Return a datfile, which should be a tuple with the first element
-    containing the cache, and the second element the list of read items. """
+def read_datfile():
+    """ Return the saved readlist from the datfile """
     debug = InformantConfig().get_argv_debug()
+    filename = InformantConfig().get_savefile()
     if debug:
         ui.debug_print('Getting datfile from "{}"'.format(filename))
 
     try:
         with open(filename, 'rb') as pickle_file:
             try:
-                (cache, readlist) = pickle.load(pickle_file)
+                readlist = pickle.load(pickle_file)
                 pickle_file.close()
+                if isinstance(readlist, tuple):
+                    # backwards compatibility with informant < 0.4.0 save data
+                    readlist = readlist[1]
             except (EOFError, ValueError):
-                (cache, readlist) = ({"feed": None, "max-age": None, "last-request": None}, [])
+                readlist = []
     except (FileNotFoundError, PermissionError):
-        (cache, readlist) = ({"feed": None, "components": {}}, [])
-    return (cache, readlist)
+        readlist = []
+    return readlist
 
 def save_datfile():
-    """ Save the datfile with cache and readlist """
+    """ Save the readlist to the datfile """
     debug = InformantConfig().get_argv_debug()
-    cache = InformantConfig().cache
     readlist = InformantConfig().readlist
     if debug:
         return
-    filename = get_save_name()
-    datfile_obj = (cache, readlist)
+    filename = InformantConfig().get_savefile()
     try:
         # then open as write to save updated list
         with open(filename, 'wb') as pickle_file:
-            pickle.dump(datfile_obj, pickle_file)
+            pickle.dump(readlist, pickle_file)
             pickle_file.close()
     except PermissionError:
         ui.err_print('Unable to save read information, please re-run with \
