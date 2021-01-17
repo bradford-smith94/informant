@@ -13,7 +13,6 @@ import textwrap
 import html2text
 
 from informant.config import InformantConfig
-import informant.entry as en
 
 RAW_OPT = '--raw'
 
@@ -70,16 +69,16 @@ def running_from_pacman():
         ui.debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
 
-def pretty_print_item(item):
-    """ Print out the given feed item, replacing some markup to make it look
-    nicer. If the '--raw' option has been provided then the markup will not be
+def pretty_print_item(entry):
+    """ Print out the given entry, replacing some markup to make it look nicer.
+    If the '--raw' option has been provided then the markup will not be
     replaced. """
     argv = InformantConfig().get_argv()
-    title = item['title']
-    body = item['body']
+    title = entry.title
+    body = entry.body
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
-    timestamp = str(item['timestamp'])
+    timestamp = str(entry.timestamp)
     if not argv.get(RAW_OPT):
         #if not using raw also bold title
         title = bold + title + clear
@@ -95,15 +94,15 @@ def format_list_item(entry, index):
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
     terminal_width = shutil.get_terminal_size().columns
-    wrap_width = terminal_width - len(str(entry['timestamp'])) - 1
-    heading = str(index) + ': ' + entry['title']
+    wrap_width = terminal_width - len(str(entry.timestamp)) - 1
+    heading = str(index) + ': ' + entry.title
     wrapped_heading = textwrap.wrap(heading, wrap_width)
-    padding = terminal_width - len(wrapped_heading[0] + str(entry['timestamp']))
-    if en.has_been_read(entry):
+    padding = terminal_width - len(wrapped_heading[0] + str(entry.timestamp))
+    if entry.has_been_read():
         return (
             wrapped_heading[0] +
             ' ' * (padding) +
-            str(entry['timestamp']) +
+            str(entry.timestamp) +
             '\n'.join(wrapped_heading[1:])
                 )
     else:
@@ -112,7 +111,7 @@ def format_list_item(entry, index):
             wrapped_heading[0] +
             clear +
             ' ' * (padding) +
-            str(entry['timestamp']) +
+            str(entry.timestamp) +
             bold +
             '\n'.join(wrapped_heading[1:]) +
             clear

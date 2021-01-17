@@ -45,7 +45,6 @@ import docopt
 
 # local
 from informant.config import InformantConfig
-import informant.entry as en
 from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
@@ -53,7 +52,6 @@ import informant.ui as ui
 __version__ = '0.3.0'
 
 CONFIG_FILE = 'config.json' #TODO rename for release
-ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
 # commands
 CHECK_CMD = 'check'
@@ -82,14 +80,14 @@ def check_cmd(feed):
     unread = 0
     unread_items = []
     for entry in feed:
-        if not en.has_been_read(entry):
+        if not entry.has_been_read():
             unread += 1
             unread_items.append(entry)
     if unread == 1:
         if running_from_pacman:
             ui.pacman_msg('Stopping upgrade to print news')
         ui.pretty_print_item(unread_items[0])
-        en.mark_as_read(unread_items[0])
+        unread_items[0].mark_as_read()
         fs.save_datfile()
         if running_from_pacman:
             ui.pacman_msg('You can re-run your pacman command to complete the upgrade')
@@ -110,7 +108,7 @@ def list_cmd(feed):
     index = 0
     for entry in feed_list:
         if not argv.get(UNREAD_OPT) \
-        or (argv.get(UNREAD_OPT) and not en.has_been_read(entry)):
+        or (argv.get(UNREAD_OPT) and not entry.has_been_read()):
             print(ui.format_list_item(entry, index))
             index += 1
 
@@ -119,7 +117,7 @@ def read_cmd(feed):
     argv = InformantConfig().get_argv()
     if argv.get(READALL_OPT):
         for entry in feed:
-            en.mark_as_read(entry)
+            entry.mark_as_read(entry)
     else:
         if argv[ITEM_ARG]:
             try:
@@ -131,15 +129,15 @@ def read_cmd(feed):
                         break
                 #NOTE: this will read the oldest unread item if no matches are found
             ui.pretty_print_item(entry)
-            en.mark_as_read(entry)
+            entry.mark_as_read()
         else:
             unread_entries = list()
             for entry in feed:
-                if not en.has_been_read(entry):
+                if not entry.has_been_read():
                     unread_entries.insert(0, entry)
             for entry in unread_entries:
                 ui.pretty_print_item(entry)
-                en.mark_as_read(entry)
+                entry.mark_as_read()
                 if entry is not unread_entries[-1]:
                     read_next = ui.prompt_yes_no('Read next item?', 'yes')
                     if read_next in ('n', 'no'):
@@ -160,7 +158,7 @@ def run():
     for config_feed in config['feeds']:
         feed = feed + Feed(config_feed).entries
 
-    feed = sorted(feed, key=lambda k: k['timestamp'], reverse=True)
+    feed = sorted(feed, key=lambda k: k.timestamp, reverse=True)
 
     if argv.get(CHECK_CMD):
         check_cmd(feed)
