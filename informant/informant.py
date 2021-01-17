@@ -170,7 +170,7 @@ def run():
 def main():
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
-    cache, readlist = fs.get_datfile(fs.get_save_name())
+    cache, readlist = fs.read_datfile(InformantConfig().get_savefile())
     InformantConfig().cache = cache
     InformantConfig().readlist = readlist
     if os.path.exists(CONFIG_FILE):

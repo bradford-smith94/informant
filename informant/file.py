@@ -10,16 +10,7 @@ import sys
 from informant.config import InformantConfig
 import informant.ui as ui
 
-FILE_DEFAULT = '/var/cache/informant.dat'
-
-def get_save_name():
-    """ Return the name of the file to save read information to. """
-    file_opt = InformantConfig().get_argv_savefile()
-    if file_opt:
-        return file_opt
-    return FILE_DEFAULT
-
-def get_datfile(filename):
+def read_datfile(filename):
     """ Return a datfile, which should be a tuple with the first element
     containing the cache, and the second element the list of read items. """
     debug = InformantConfig().get_argv_debug()

@@ -8,6 +8,8 @@ settings provided to Informant.
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 
+FILE_DEFAULT = '/var/cache/informant.dat'
+
 class Singleton(type):
     """ A Singleton class to be used as a base """
     _instances = {}
@@ -41,8 +43,10 @@ class InformantConfig(metaclass=Singleton):
     def get_argv_debug(self):
         return self.argv.get(DEBUG_OPT)
 
-    def get_argv_savefile(self):
-        return self.argv.get(FILE_OPT)
+    def get_savefile(self):
+        if self.argv.get(FILE_OPT):
+            return self.argv.get(FILE_OPT)
+        return FILE_DEFAULT
 
     def set_config(self, config):
         self.config = config
