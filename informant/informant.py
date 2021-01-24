@@ -25,19 +25,20 @@ Commands:
             flag will mark all items as read without printing.
 
 Options:
-    -d, --debug                 Print the command line arguments and don't make
-                                changes to the save file
-    -r, --raw                   When printing items do not replace any markup
-    -f <file>, --file=<file>    Use <file> as the save location for read items
-    -h, --help                  Show this help and exit
-    -V,--version                Show version and exit
-    --no-cache                  Do not use cache
+    -c <cfile>, --config=<cfile>    Use <cfile> as the config file
+    -d, --debug                     Print the command line arguments and don't
+                                    make changes to the save file
+    -r, --raw                       When printing items do not replace any
+                                    markup
+    -f <file>, --file=<file>        Use <file> as the save location for read
+                                    items
+    -h, --help                      Show this help and exit
+    -V,--version                    Show version and exit
+    --no-cache                      Do not use cache
 
 """
 
 # builtins
-import json
-import os
 import sys
 
 # external
@@ -50,8 +51,6 @@ import informant.file as fs
 import informant.ui as ui
 
 __version__ = '0.3.0'
-
-CONFIG_FILE = 'config.json' #TODO rename for release
 
 # commands
 CHECK_CMD = 'check'
@@ -153,9 +152,12 @@ def run():
     if argv.get(DEBUG_OPT):
         ui.debug_print(argv)
 
-    feed = []
-    for config_feed in config['feeds']:
-        feed = feed + Feed(config_feed).entries
+    if 'feeds' in config:
+        feed = []
+        for config_feed in config['feeds']:
+            feed += Feed(config_feed).entries
+    else:
+        feed = Feed().entries
 
     feed = sorted(feed, key=lambda k: k.timestamp, reverse=True)
 
@@ -169,12 +171,8 @@ def run():
 def main():
     argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
     InformantConfig().set_argv(argv)
-    readlist = fs.read_datfile()
-    InformantConfig().readlist = readlist
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as cfg:
-            config = json.loads(cfg.read())
-            InformantConfig().set_config(config)
+    InformantConfig().debug_print = ui.debug_print
+    InformantConfig().readlist = fs.read_datfile()
     run()
     sys.exit()
 

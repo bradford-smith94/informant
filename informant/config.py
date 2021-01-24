@@ -5,12 +5,19 @@ This module contains helpers to manage arguments, options and configuration
 settings provided to Informant.
 """
 
+import json
+import os
+
+from xdg import xdg_config_dirs, xdg_config_home
+
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
+CFILE_OPT = '--config'
 NOCACHE_OPT = '--no-cache'
 
 FILE_DEFAULT = '/var/lib/informant.dat'
 CACHE_DEFAULT = '/var/cache/informant'
+CONFIG_BASE = 'informantrc.json'
 
 class Singleton(type):
     """ A Singleton class to be used as a base """
@@ -26,7 +33,7 @@ class InformantConfig(metaclass=Singleton):
 
     def __init__(self):
         self.argv = {}
-        self.config = {}
+        self.config = None
         self.colors = {
                 'RED': '\033[0;31m',
                 'YELLOW': '\033[1;33m',
@@ -34,6 +41,7 @@ class InformantConfig(metaclass=Singleton):
                 'BOLD': '\033[1m'
         }
         self.readlist = None
+        self.debug_print = None
 
     def set_argv(self, args):
         self.argv = args
@@ -63,5 +71,31 @@ class InformantConfig(metaclass=Singleton):
     def set_config(self, config):
         self.config = config
 
+    def read_config(self):
+        self.config = {}
+        cfile_option = self.argv.get(CFILE_OPT)
+        cfg_fname = None
+        if cfile_option and os.path.exists(cfile_option):
+            cfg_fname = cfile_option
+        elif os.path.exists(os.path.expandvars('$HOME/.' + CONFIG_BASE)):
+            cfg_fname = os.path.expandvars('$HOME/.' + CONFIG_BASE)
+        elif os.path.exists(os.path.join(xdg_config_home(), CONFIG_BASE)):
+            cfg_fname = os.path.join(xdg_config_home(), CONFIG_BASE)
+        else:
+            for dirname in xdg_config_dirs():
+                if os.path.exists(os.path.join(dirname, CONFIG_BASE)):
+                    cfg_fname = os.path.join(dirname, CONFIG_BASE)
+                    break
+        if self.get_argv_debug():
+            self.debug_print('cfg_fname: {}'.format(cfg_fname))
+        if cfg_fname is not None:
+            with open(cfg_fname, 'r') as cfg:
+                self.config = json.loads(cfg.read())
+        if self.get_argv_debug():
+            self.debug_print('config: {}'.format(self.config))
+        return self.config
+
     def get_config(self):
+        if self.config is None:
+            return self.read_config()
         return self.config

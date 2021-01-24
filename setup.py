@@ -13,7 +13,8 @@ setup(
             'feedparser',
             'python-dateutil',
             'CacheControl',
-            'lockfile'
+            'lockfile',
+            'xdg'
         ],
         entry_points={
             'console_scripts': [

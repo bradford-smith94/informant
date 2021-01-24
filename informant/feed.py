@@ -16,7 +16,7 @@ from informant.entry import Entry
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
 class Feed:
-    def __init__(self, config):
+    def __init__(self, config={}):
         if 'name' in config:
             self.name = config['name']
         else:
