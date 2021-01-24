@@ -17,6 +17,11 @@ ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
 class Feed:
     def __init__(self, config):
+        if 'name' in config:
+            self.name = config['name']
+        else:
+            self.name = None
+
         if 'url' in config:
             self.url = config['url']
         else:
@@ -50,7 +55,8 @@ class Feed:
             timestamp = date_parser.parse(item[self.timestamp_key])
             entries.append(Entry(item[self.title_key],
                                  timestamp,
-                                 item[self.body_key]))
+                                 item[self.body_key],
+                                 self.name))
         return entries
 
     def fetch(self):

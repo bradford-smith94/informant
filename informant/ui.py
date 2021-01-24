@@ -86,7 +86,11 @@ def pretty_print_item(entry):
         h2t.inline_links = False
         h2t.body_width = 85
         body = h2t.handle(body)
-    print(title + '\n' + timestamp + '\n\n' + body)
+    if entry.feed_name is not None:
+        feed_name = '({})'.format(entry.feed_name)
+        print('{}\n{}\n{}\n\n{}'.format(title, feed_name, timestamp, body))
+    else:
+        print('{}\n{}\n\n{}'.format(title, timestamp, body))
 
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and

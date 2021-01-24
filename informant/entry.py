@@ -8,10 +8,11 @@ from informant.config import InformantConfig
 import informant.ui as ui
 
 class Entry:
-    def __init__(self, title, timestamp, body):
+    def __init__(self, title, timestamp, body, feed_name):
         self.title = title
         self.timestamp = timestamp
         self.body = body
+        self.feed_name = feed_name
 
     def has_been_read(self):
         """ Check if this entry has been read and return True or False. """
