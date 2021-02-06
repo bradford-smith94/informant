@@ -1,4 +1,4 @@
-.TH INFORMANT 1 "02 JANUARY 2021" informant-v0.3.2 "Informant Manual"
+.TH INFORMANT 1 "06 FEBRUARY 2021" informant-v0.4.0 "Informant Manual"
 .SH NAME
 informant \- An Arch Linux News reader and pacman hook.
 
@@ -67,6 +67,11 @@ Mark all the most recent news items as read without printing them.
 These are the global options which can be applied to any of the subcommands.
 
 .TP
+.BR \-c " " <cfile> ", " \-\-config=<cfile>
+Read configuration from <file>. Configuration and syntax can be found below in
+CONFIGURATION.
+
+.TP
 .BR \-d ", " \-\-debug
 Print the command line arguments and don't make changes to the save file, useful
 for debugging.
@@ -97,6 +102,93 @@ Print the help and exit.
 .TP
 .BR \-V ", " \-\-version
 Print the version information and exit.
+
+.SH CONFIGURATION
+Informant can be configured to check multiple feeds instead of just the Arch
+Linux News feed (whether having it do so is actually useful or not is left up to
+the user). Informant will check for an
+.B informantrc.json
+file in a few places. It will check in this order:
+.RS
+.PP
+\- CLI provided option (cfile)
+
+.PP
+\- $HOME/.informantrc.json
+
+.PP
+\- $XDG_CONFIG_HOME/informantrc.json
+
+.PP
+\- /etc/informantrc.json
+
+.PP
+\- For each directory $d in $XDG_CONFIG_DIRS it will look for $d/informantrc.json
+.RE
+
+.PP
+.B NOTE
+IF you want the configuration file to be used in the pacman hook make sure to
+use a save location that will be accessible to informant when running as
+root/sudo.
+
+.SS Configuration Syntax
+The syntax of informantrc.json is a JSON object containig on key:
+.B feeds
+that is a list describing the feeds you want informant to check. Each feed is
+represented as a JSON object with the following keys:
+.RS
+
+.TP
+.BR name (optional)
+used to show which feed each news item is from
+
+.TP
+.BR url (required)
+the feed URL
+
+.TP
+.BR title-key (optional)
+defaults to
+.IR title ,
+the key used to reference the news item title in the feed
+
+.TP
+.BR body-key (optional)
+defaults to
+.IR summary ,
+the key used to reference the news item body in the feed
+
+.TP
+.BR timestamp-key (optional)
+defaults to
+.IR published ,
+the key used to reference the news item date in the feed
+.RE
+
+.PP
+For example, the below informantrc.json will configure informant to check the
+Arch Linux News feed as well as the Arch Linux 32 News Feed:
+.EX
+{
+    "feeds": [
+        {
+            "name": "Arch News",
+            "url": "https://archlinux.org/feeds/news",
+            "title-key": "title",
+            "body-key": "summary",
+            "timestamp-key": "published"
+        },
+        {
+            "name": "Arch32 News",
+            "url": "https://bbs.archlinux32.org/extern.php?action=feed&fid=12&type=atom",
+            "title-key": "title",
+            "body-key": "summary",
+            "timestamp-key": "updated"
+        }
+    ]
+}
+.EE
 
 .SH AUTHOR
 Bradford Smith <\fIhttps://github.com/bradford-smith94\fR>
