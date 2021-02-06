@@ -66,7 +66,7 @@ def running_from_pacman():
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
     if debug:
-        ui.debug_print('informant: running from: {}'.format(p_name))
+        debug_print('informant: running from: {}'.format(p_name))
     return p_name == 'pacman'
 
 def pretty_print_item(entry):
