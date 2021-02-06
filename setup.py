@@ -18,6 +18,7 @@ setup(
         install_requires=[
             'docopt',
             'feedparser',
+            'html2text',
             'python-dateutil',
             'CacheControl',
             'lockfile',
