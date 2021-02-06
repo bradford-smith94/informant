@@ -21,8 +21,7 @@ setup(
             'html2text',
             'python-dateutil',
             'CacheControl',
-            'lockfile',
-            'xdg'
+            'lockfile'
         ],
         entry_points={
             'console_scripts': [

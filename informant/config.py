@@ -8,8 +8,6 @@ settings provided to Informant.
 import json
 import os
 
-from xdg import xdg_config_dirs, xdg_config_home
-
 DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 CFILE_OPT = '--config'
@@ -79,15 +77,18 @@ class InformantConfig(metaclass=Singleton):
             cfg_fname = cfile_option
         elif os.path.exists(os.path.expandvars('$HOME/.' + CONFIG_BASE)):
             cfg_fname = os.path.expandvars('$HOME/.' + CONFIG_BASE)
-        elif os.path.exists(os.path.join(xdg_config_home(), CONFIG_BASE)):
-            cfg_fname = os.path.join(xdg_config_home(), CONFIG_BASE)
+        elif os.path.exists(os.path.expandvars('$XDG_CONFIG_HOME/' + CONFIG_BASE)):
+            cfg_fname = os.path.expandvars('$XDG_CONFIG_HOME/' + CONFIG_BASE)
         elif os.path.exists(os.path.join('/etc/', CONFIG_BASE)):
             cfg_fname = os.path.join('/etc/', CONFIG_BASE)
         else:
-            for dirname in xdg_config_dirs():
-                if os.path.exists(os.path.join(dirname, CONFIG_BASE)):
-                    cfg_fname = os.path.join(dirname, CONFIG_BASE)
-                    break
+            xdg_config_dirs = os.environ.get('$XDG_CONFIG_DIRS')
+            if xdg_config_dirs:
+                xdg_config_dirs = [xdg_config_dirs.split(':')]
+                for dirname in xdg_config_dirs:
+                    if os.path.exists(os.path.join(dirname, CONFIG_BASE)):
+                        cfg_fname = os.path.join(dirname, CONFIG_BASE)
+                        break
         if self.get_argv_debug():
             self.debug_print('cfg_fname: {}'.format(cfg_fname))
         if cfg_fname is not None:
