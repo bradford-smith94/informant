@@ -78,7 +78,7 @@ def pretty_print_item(entry):
     body = entry.body
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
-    timestamp = str(entry.timestamp)
+    timestamp = str(entry.pretty_date)
     if not argv.get(RAW_OPT):
         #if not using raw also bold title
         title = bold + title + clear
@@ -98,15 +98,16 @@ def format_list_item(entry, index):
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
     terminal_width = shutil.get_terminal_size().columns
-    wrap_width = terminal_width - len(str(entry.timestamp)) - 1
+    timestamp = str(entry.pretty_date)
+    wrap_width = terminal_width - len(timestamp) - 1
     heading = str(index) + ': ' + entry.title
     wrapped_heading = textwrap.wrap(heading, wrap_width)
-    padding = terminal_width - len(wrapped_heading[0] + str(entry.timestamp))
+    padding = terminal_width - len(wrapped_heading[0] + timestamp)
     if entry.has_been_read():
         return (
             wrapped_heading[0] +
             ' ' * (padding) +
-            str(entry.timestamp) +
+            timestamp +
             '\n'.join(wrapped_heading[1:])
                 )
     else:
@@ -115,7 +116,7 @@ def format_list_item(entry, index):
             wrapped_heading[0] +
             clear +
             ' ' * (padding) +
-            str(entry.timestamp) +
+            timestamp +
             bold +
             '\n'.join(wrapped_heading[1:]) +
             clear

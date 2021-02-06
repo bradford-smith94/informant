@@ -11,6 +11,7 @@ class Entry:
     def __init__(self, title, timestamp, body, feed_name):
         self.title = title
         self.timestamp = timestamp
+        self.pretty_date = timestamp.strftime('%a, %d %b %Y %H:%M:%S %z')
         self.body = body
         self.feed_name = feed_name
 
