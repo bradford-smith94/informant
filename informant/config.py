@@ -15,9 +15,9 @@ FILE_OPT = '--file'
 CFILE_OPT = '--config'
 NOCACHE_OPT = '--no-cache'
 
-FILE_DEFAULT = '/var/lib/informant.dat'
-CACHE_DEFAULT = '/var/cache/informant'
-CONFIG_BASE = 'informantrc.json'
+FILE_DEFAULT = '/var/lib/informant.dat' # readlist save file
+CACHE_DEFAULT = '/var/cache/informant' # http caching
+CONFIG_BASE = 'informantrc.json' # user config
 
 class Singleton(type):
     """ A Singleton class to be used as a base """
@@ -81,6 +81,8 @@ class InformantConfig(metaclass=Singleton):
             cfg_fname = os.path.expandvars('$HOME/.' + CONFIG_BASE)
         elif os.path.exists(os.path.join(xdg_config_home(), CONFIG_BASE)):
             cfg_fname = os.path.join(xdg_config_home(), CONFIG_BASE)
+        elif os.path.exists(os.path.join('/etc/', CONFIG_BASE)):
+            cfg_fname = os.path.join('/etc/', CONFIG_BASE)
         else:
             for dirname in xdg_config_dirs():
                 if os.path.exists(os.path.join(dirname, CONFIG_BASE)):

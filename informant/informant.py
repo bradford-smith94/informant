@@ -50,7 +50,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 # commands
 CHECK_CMD = 'check'
@@ -150,7 +150,7 @@ def run():
     argv = InformantConfig().get_argv()
     config = InformantConfig().get_config()
     if argv.get(DEBUG_OPT):
-        ui.debug_print(argv)
+        ui.debug_print('cli args: {}'.format(argv))
 
     if 'feeds' in config:
         feed = []
