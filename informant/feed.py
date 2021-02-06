@@ -4,6 +4,8 @@ informant/feed.py
 This module defines the structure of a newsfeed for Informant.
 """
 
+import os
+
 import requests
 import feedparser
 from dateutil import parser as date_parser
@@ -62,7 +64,8 @@ class Feed:
     def fetch(self):
         cachefile = InformantConfig().get_cachefile()
         if InformantConfig().get_argv_use_cache():
-            session = CacheControl(requests.Session(), cache=FileCache(cachefile))
+            os.umask(0o0002) # unrestrict umask so we can cache with proper permissions
+            session = CacheControl(requests.Session(), cache=FileCache(cachefile, filemode=0o0664, dirmode=0o0775))
             return feedparser.parse(session.get(self.url).content)
         else:
             return feedparser.parse(self.url)
