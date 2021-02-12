@@ -5,6 +5,7 @@ This module defines the structure of a newsfeed for Informant.
 """
 
 import os
+import sys
 
 import requests
 import feedparser
@@ -14,6 +15,7 @@ from cachecontrol.caches import FileCache
 
 from informant.config import InformantConfig
 from informant.entry import Entry
+import informant.ui as ui
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
 
@@ -62,10 +64,21 @@ class Feed:
         return entries
 
     def fetch(self):
-        cachefile = InformantConfig().get_cachefile()
+        feed = None
         if InformantConfig().get_argv_use_cache():
+            cachefile = InformantConfig().get_cachefile()
             os.umask(0o0002) # unrestrict umask so we can cache with proper permissions
-            session = CacheControl(requests.Session(), cache=FileCache(cachefile, filemode=0o0664, dirmode=0o0775))
-            return feedparser.parse(session.get(self.url).content)
+            try:
+                session = CacheControl(requests.Session(), cache=FileCache(cachefile, filemode=0o0664, dirmode=0o0775))
+                feed = feedparser.parse(session.get(self.url).content)
+            except Exception as e:
+                ui.err_print('Unable to read cache informantion: {}'.format(e))
+                feed = feedparser.parse(self.url)
         else:
-            return feedparser.parse(self.url)
+            feed = feedparser.parse(self.url)
+
+        if feed.bozo:
+            ui.err_print('Encountered feed error: {}'.format(feed.bozo_exception))
+            sys.exit(255)
+        else:
+            return feed
