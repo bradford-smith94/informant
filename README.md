@@ -63,11 +63,11 @@ Linux News feed (whether having it do so is actually useful or not is left up to
 the user). Informant will check for an [informantrc.json](informantrc.json.example)
 file in a few places. It will check in this order:
 
-    - CLI provided option
-    - `$HOME/.informantrc.json`
-    - `$XDG_CONFIG_HOME/informantrc.json`
-    - `/etc/informantrc.json`
-    - for each directory (`$d`) in `$XDG_CONFIG_DIRS` it will look for `$d/informantrc.json`
+- CLI provided option
+- `$HOME/.informantrc.json`
+- `$XDG_CONFIG_HOME/informantrc.json`
+- `/etc/informantrc.json`
+- for each directory (`$d`) in `$XDG_CONFIG_DIRS` it will look for `$d/informantrc.json`
 
 **NOTE:** If you want the configuration file to be used in the pacman hook make
 sure to use a save location that will be accessible to informant when running as
@@ -79,10 +79,10 @@ The syntax of informantrc.json is a JSON object containing one key (feeds) that
 is a list describing the feeds you want informant to check. Each feed is
 represented as a JSON object with the following keys:
 
-    - `name` (optional) - used to show which feed each news item is from
-    - `url` (required) - the feed URL
-    - `title-key` (optional) - defaults to `title`, the key used to reference the news item title in the feed
-    - `body-key` (optional) - defaults to `summary`, the key used to reference the news item body in the feed
-    - `timestamp-key` (optional) - defaults to `published`, the key used to reference the news item date in the feed
+- `name` (optional) - used to show which feed each news item is from
+- `url` (required) - the feed URL
+- `title-key` (optional) - defaults to `title`, the key used to reference the news item title in the feed
+- `body-key` (optional) - defaults to `summary`, the key used to reference the news item body in the feed
+- `timestamp-key` (optional) - defaults to `published`, the key used to reference the news item date in the feed
 
 An example is provided here as [informanrc.json.example](informantrc.json.example) which configures informant to check the Arch Linux News feed as well as the Arch Linux 32 News feed.
