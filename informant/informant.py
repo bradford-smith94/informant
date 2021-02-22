@@ -50,7 +50,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 # commands
 CHECK_CMD = 'check'
@@ -94,6 +94,8 @@ def check_cmd(feed):
 them.'.format(unread))
         if running_from_pacman:
             ui.pacman_msg('Run `informant read` before re-running your pacman command')
+    else:
+        print('There are no unread news items')
     sys.exit(unread)
 
 def list_cmd(feed):
