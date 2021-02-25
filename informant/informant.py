@@ -50,7 +50,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 # commands
 CHECK_CMD = 'check'
