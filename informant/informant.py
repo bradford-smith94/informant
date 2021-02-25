@@ -117,7 +117,7 @@ def read_cmd(feed):
     argv = InformantConfig().get_argv()
     if argv.get(READALL_OPT):
         for entry in feed:
-            entry.mark_as_read(entry)
+            entry.mark_as_read()
     else:
         if argv[ITEM_ARG]:
             try:
