@@ -72,7 +72,7 @@ class Feed:
                 session = CacheControl(requests.Session(), cache=FileCache(cachefile, filemode=0o0664, dirmode=0o0775))
                 feed = feedparser.parse(session.get(self.url).content)
             except Exception as e:
-                ui.err_print('Unable to read cache informantion: {}'.format(e))
+                ui.err_print('Unable to read cache information: {}'.format(e))
                 feed = feedparser.parse(self.url)
         else:
             feed = feedparser.parse(self.url)
