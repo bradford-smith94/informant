@@ -9,8 +9,13 @@ transactions to make sure you have read the news first.
 ## Installation
 
 You can install from my [AUR package](https://aur.archlinux.org/packages/informant/).
+In case anyone wants to use Github to create issues or contribute to the AUR
+package I have also [mirrored the PKGBUILD](https://github.com/bradford-smith94/informant-PKGBUILD).
 
 Requirements are in `requirements.txt`. If you want to install it manually.
+**NOTE:** The provided pip requirements likely won't be as up to date as the Arch
+packages that AUR-installed informant will depend on, so your mileage may vary
+if you take this approach.
 
 On the first run informant assumes that you have not read any of the most recent news items.
 Use the `informant read` command specified below to mark items as read.
@@ -85,4 +90,4 @@ represented as a JSON object with the following keys:
 - `body-key` (optional) - defaults to `summary`, the key used to reference the news item body in the feed
 - `timestamp-key` (optional) - defaults to `published`, the key used to reference the news item date in the feed
 
-An example is provided here as [informanrc.json.example](informantrc.json.example) which configures informant to check the Arch Linux News feed as well as the Arch Linux 32 News feed.
+An example is provided here as [informanrc.json.example](informantrc.json.example) which configures informant to check the Arch Linux News feed as well as the [Arch Linux 32](https://archlinux32.org/) News feed.
