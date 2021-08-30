@@ -17,10 +17,8 @@ class Entry:
 
     def has_been_read(self):
         """ Check if this entry has been read and return True or False. """
-        debug = InformantConfig().get_argv_debug()
         readlist = InformantConfig().readlist
-        if debug:
-            ui.debug_print(readlist)
+        #ui.debug_print('readlist: {}'.format(readlist))
         title = self.title
         date = self.timestamp
         if str(date.timestamp()) + '|' + title in readlist:

@@ -28,8 +28,11 @@ def err_print(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def debug_print(*args, **kwargs):
-    """ Same as builtin print but output to stderr. """
-    print(*args, file=sys.stderr, **kwargs)
+    """ Same as builtin print but output to stderr and only when the debug
+    option is provided.
+    """
+    if InformantConfig().get_argv_debug():
+        print(*args, file=sys.stderr, **kwargs)
 
 def pacman_msg(*args, **kwargs):
     """ Same as print but include yellow color and "informant" preamble so the
@@ -61,12 +64,10 @@ def prompt_yes_no(question, default):
 
 def running_from_pacman():
     """ Return True if the parent process is pacman """
-    debug = InformantConfig().get_argv_debug()
     ppid = os.getppid()
     p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
     p_name = p_name.decode().rstrip()
-    if debug:
-        debug_print('informant: running from: {}'.format(p_name))
+    debug_print('informant running from: {}'.format(p_name))
     return p_name == 'pacman'
 
 def pretty_print_item(entry):

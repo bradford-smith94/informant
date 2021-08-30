@@ -12,10 +12,8 @@ import informant.ui as ui
 
 def read_datfile():
     """ Return the saved readlist from the datfile """
-    debug = InformantConfig().get_argv_debug()
     filename = InformantConfig().get_savefile()
-    if debug:
-        ui.debug_print('Getting datfile from "{}"'.format(filename))
+    ui.debug_print('Getting datfile from "{}"'.format(filename))
 
     try:
         with open(filename, 'rb') as pickle_file:

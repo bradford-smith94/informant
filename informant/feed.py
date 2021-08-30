@@ -46,6 +46,8 @@ class Feed:
         else:
             self.timestamp_key = 'published'
 
+        ui.debug_print('building feed for: {}'.format(self.name if self.name is not None else self.url))
+
         self.feed = self.fetch()  # the complete feed as returned by feedparser
         self.entries = self.build_feed()  # the list of entries informant will use
 
@@ -66,6 +68,7 @@ class Feed:
     def fetch(self):
         feed = None
         if InformantConfig().get_argv_use_cache():
+            ui.debug_print('Checking cache')
             cachefile = InformantConfig().get_cachefile()
             os.umask(0o0002) # unrestrict umask so we can cache with proper permissions
             try:
@@ -73,6 +76,7 @@ class Feed:
                 feed = feedparser.parse(session.get(self.url).content)
             except Exception as e:
                 ui.err_print('Unable to read cache information: {}'.format(e))
+                ui.debug_print('Falling back to fetching feed')
                 feed = feedparser.parse(self.url)
         else:
             feed = feedparser.parse(self.url)

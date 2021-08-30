@@ -151,8 +151,7 @@ def run():
     Check given arguments get feed and run given command. """
     argv = InformantConfig().get_argv()
     config = InformantConfig().get_config()
-    if argv.get(DEBUG_OPT):
-        ui.debug_print('cli args: {}'.format(argv))
+    ui.debug_print('cli args: {}'.format(argv))
 
     if 'feeds' in config:
         feed = []
