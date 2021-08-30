@@ -34,6 +34,7 @@ Options:
                                     items
     -h, --help                      Show this help and exit
     -V,--version                    Show version and exit
+    --clear-cache                   Empty the cache before fetching feed(s)
     --no-cache                      Do not use cache
 
 """
@@ -56,11 +57,6 @@ __version__ = '0.4.3'
 CHECK_CMD = 'check'
 LIST_CMD = 'list'
 READ_CMD = 'read'
-
-# global options
-DEBUG_OPT = '--debug'
-FILE_OPT = '--file'
-RAW_OPT = '--raw'
 
 # 'list' options
 REV_OPT = '--reverse'

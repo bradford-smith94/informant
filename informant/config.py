@@ -12,6 +12,7 @@ DEBUG_OPT = '--debug'
 FILE_OPT = '--file'
 CFILE_OPT = '--config'
 NOCACHE_OPT = '--no-cache'
+CLRCACHE_OPT = '--clear-cache'
 
 FILE_DEFAULT = '/var/lib/informant.dat' # readlist save file
 CACHE_DEFAULT = '/var/cache/informant' # http caching
@@ -57,6 +58,14 @@ class InformantConfig(metaclass=Singleton):
         if self.argv.get(NOCACHE_OPT):
             return False
         return True
+
+    def get_argv_clear_cache(self):
+        """ Return True if we should clear the cache, else False.
+        Providing the CLRCACHE_OPT means we want to clear the cache.
+        """
+        if self.argv.get(CLRCACHE_OPT):
+            return True
+        return False
 
     def get_cachefile(self):
         return CACHE_DEFAULT

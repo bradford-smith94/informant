@@ -4,7 +4,10 @@ informant/file.py
 This module contains filesystem related functions.
 """
 
+import glob
+import os
 import pickle
+import shutil
 import sys
 
 from informant.config import InformantConfig
@@ -45,4 +48,15 @@ def save_datfile():
         ui.err_print('Unable to save read information, please re-run with \
 correct permissions to access "{}".'.format(filename))
         sys.exit(255)
+
+def clear_cachefile():
+    """ Empty the cachefile directory """
+    cache_dir = InformantConfig().get_cachefile()
+    pattern = os.path.join(cache_dir, '*')
+    ui.debug_print('Removing based on pattern: {}'.format(pattern))
+    for filename in glob.glob(pattern):
+        if os.path.isdir(filename):
+            shutil.rmtree(filename)
+        else:
+            os.remove(filename)
 

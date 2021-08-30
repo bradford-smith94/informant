@@ -15,6 +15,7 @@ from cachecontrol.caches import FileCache
 
 from informant.config import InformantConfig
 from informant.entry import Entry
+import informant.file as fs
 import informant.ui as ui
 
 ARCH_NEWS = 'https://archlinux.org/feeds/news'
@@ -67,6 +68,9 @@ class Feed:
 
     def fetch(self):
         feed = None
+        if InformantConfig().get_argv_clear_cache():
+            ui.debug_print('Clearing cache')
+            fs.clear_cachefile()
         if InformantConfig().get_argv_use_cache():
             ui.debug_print('Checking cache')
             cachefile = InformantConfig().get_cachefile()
