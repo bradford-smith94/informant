@@ -156,6 +156,10 @@ def run():
     else:
         feed = Feed().entries
 
+    if not feed:
+        ui.warn_print('no news feed items, informant is performing no action')
+        sys.exit()
+
     feed = sorted(feed, key=lambda k: k.timestamp, reverse=True)
 
     if argv.get(CHECK_CMD):

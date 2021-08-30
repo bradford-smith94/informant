@@ -27,6 +27,17 @@ def err_print(*args, **kwargs):
         msg += arg
     print(msg, file=sys.stderr, **kwargs)
 
+def warn_print(*args, **kwargs):
+    """ Same as builtin print but output to stderr with yellow color and
+    "WARNING" preamble.
+    """
+    yellow = InformantConfig().colors['YELLOW']
+    clear = InformantConfig().colors['CLEAR']
+    msg = yellow + 'WARN: ' + clear
+    for arg in args:
+        msg += arg
+    print(msg, file=sys.stderr, **kwargs)
+
 def debug_print(*args, **kwargs):
     """ Same as builtin print but output to stderr and only when the debug
     option is provided.
