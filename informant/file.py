@@ -37,6 +37,7 @@ def save_datfile():
     debug = InformantConfig().get_argv_debug()
     readlist = InformantConfig().readlist
     if debug:
+        ui.debug_print('running in debug mode, will not update readlist')
         return
     filename = InformantConfig().get_savefile()
     try:
@@ -47,7 +48,7 @@ def save_datfile():
     except PermissionError:
         ui.err_print('Unable to save read information, please re-run with \
 correct permissions to access "{}".'.format(filename))
-        sys.exit(255)
+        sys.exit(255) # this should never block pacman because the hook should run with root/sudo
 
 def clear_cachefile():
     """ Empty the cachefile directory """

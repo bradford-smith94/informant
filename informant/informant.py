@@ -26,16 +26,16 @@ Commands:
 
 Options:
     -c <cfile>, --config=<cfile>    Use <cfile> as the config file
-    -d, --debug                     Print the command line arguments and don't
-                                    make changes to the save file
+    -d, --debug                     Print the debug messages and don't make
+                                    changes to the save file
     -r, --raw                       When printing items do not replace any
                                     markup
     -f <file>, --file=<file>        Use <file> as the save location for read
                                     items
+    --no-cache                      Do not use cache
+    --clear-cache                   Empty the cache before fetching feed(s)
     -h, --help                      Show this help and exit
     -V,--version                    Show version and exit
-    --clear-cache                   Empty the cache before fetching feed(s)
-    --no-cache                      Do not use cache
 
 """
 
@@ -51,7 +51,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 # commands
 CHECK_CMD = 'check'
