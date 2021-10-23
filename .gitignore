@@ -1,4 +1,11 @@
+## Python
 __pycache__/
 *.py[cod]
 *$py.class
+
+## Virtualenv
 env/
+
+## local testing
+build/
+informant.egg-info/
