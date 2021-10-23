@@ -142,10 +142,13 @@ def read_cmd(feed):
                     print('No more unread items')
     fs.save_datfile()
 
-def run():
+def main():
     """ The main function.
     Check given arguments get feed and run given command. """
-    argv = InformantConfig().get_argv()
+    argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
+    InformantConfig().set_argv(argv)
+    InformantConfig().debug_print = ui.debug_print
+    InformantConfig().readlist = fs.read_datfile()
     config = InformantConfig().get_config()
     ui.debug_print('cli args: {}'.format(argv))
 
@@ -168,13 +171,6 @@ def run():
         list_cmd(feed)
     elif argv.get(READ_CMD):
         read_cmd(feed)
-
-def main():
-    argv = docopt.docopt(__doc__, version='informant v{}'.format(__version__))
-    InformantConfig().set_argv(argv)
-    InformantConfig().debug_print = ui.debug_print
-    InformantConfig().readlist = fs.read_datfile()
-    run()
     sys.exit()
 
 if __name__ == '__main__':
