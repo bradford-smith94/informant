@@ -1,4 +1,4 @@
-.TH INFORMANT 1 "30 AUGUST 2021" informant-v0.4.4 "Informant Manual"
+.TH INFORMANT 1 "23 OCTOBER 2021" informant-v0.4.5 "Informant Manual"
 .SH NAME
 informant \- An Arch Linux News reader and pacman hook.
 
@@ -99,6 +99,20 @@ this may be helpful to verify issues running informant due to the cache.
 .TP
 .BR \-\-clear-cache
 Empty the cache directory (/var/cache/informant/) before fetching the feed(s).
+
+.TP
+.BR \-\-clear-readlist
+Empty the save file of read news items (/var/lib/informant.dat by default), this
+will mean that any previously read news items returned in the feed will need to
+be read again. The news feed only returns a set amount of files and over time
+there may end up being items in the save file that are no longer returned when
+fetching the feed, this option can be used to cleanup the save file.
+
+By clearing the save file and then marking everything as read you effectively
+remove all the old items from the save file:
+.EX
+    informant --clear-readlist read --all
+.EE
 
 .TP
 .BR \-h ", " \-\-help

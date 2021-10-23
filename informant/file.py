@@ -17,7 +17,9 @@ def read_datfile():
     """ Return the saved readlist from the datfile """
     filename = InformantConfig().get_savefile()
     ui.debug_print('Getting datfile from "{}"'.format(filename))
-
+    if InformantConfig().get_argv_clear_savefile():
+        ui.debug_print('Clear savefile specified returning empty list')
+        return []
     try:
         with open(filename, 'rb') as pickle_file:
             try:

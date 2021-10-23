@@ -34,6 +34,7 @@ Options:
                                     items
     --no-cache                      Do not use cache
     --clear-cache                   Empty the cache before fetching feed(s)
+    --clear-readlist                Empty the saved readlist
     -h, --help                      Show this help and exit
     -V,--version                    Show version and exit
 
@@ -51,7 +52,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 # commands
 CHECK_CMD = 'check'
