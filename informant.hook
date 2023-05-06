@@ -3,6 +3,7 @@ Operation = Install
 Operation = Upgrade
 Type = Package
 Target = *
+Target = !informant
 
 [Action]
 Description = Checking Arch News with Informant ...
