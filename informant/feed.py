@@ -19,7 +19,7 @@ from informant.entry import Entry
 import informant.file as fs
 import informant.ui as ui
 
-ARCH_NEWS = 'https://archlinux.org/feeds/news'
+ARCH_NEWS = 'https://archlinux.org/feeds/news/'
 
 class Feed:
     def __init__(self, config={}):
@@ -68,6 +68,7 @@ class Feed:
         return entries
 
     def fetch(self):
+        # TODO: update to check for http 301/302 redirects
         feed = None
         if InformantConfig().get_argv_clear_cache():
             ui.debug_print('Clearing cache')
