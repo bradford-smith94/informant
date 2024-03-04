@@ -6,7 +6,7 @@ Target = *
 Target = !informant
 
 [Action]
-Description = Checking Arch News with Informant ...
+Description = Checking Arch News with Informant...
 When = PreTransaction
 Exec = /usr/bin/informant check
 AbortOnFail
