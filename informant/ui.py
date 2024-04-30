@@ -6,11 +6,11 @@ This module contains User Interface related functions.
 
 import os
 import shutil
-import subprocess
 import sys
 import textwrap
 
 import html2text
+import psutil
 
 from informant.config import InformantConfig
 
@@ -76,8 +76,7 @@ def prompt_yes_no(question, default):
 def running_from_pacman():
     """ Return True if the parent process is pacman """
     ppid = os.getppid()
-    p_name = subprocess.check_output(['ps', '-p', str(ppid), '-o', 'comm='])
-    p_name = p_name.decode().rstrip()
+    p_name = psutil.Process(ppid).name()
     debug_print('informant running from: {}'.format(p_name))
     return p_name == 'pacman'
 
