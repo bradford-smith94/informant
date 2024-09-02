@@ -18,6 +18,7 @@ CLRREAD_OPT = '--clear-readlist'
 FILE_DEFAULT = '/var/lib/informant.dat' # readlist save file
 CACHE_DEFAULT = '/var/cache/informant' # http caching
 CONFIG_BASE = 'informantrc.json' # user config
+PAGER_DEFAULT = os.environ.get('INFORMANT_PAGER', default=None)
 
 class Singleton(type):
     """ A Singleton class to be used as a base """
@@ -87,6 +88,10 @@ class InformantConfig(metaclass=Singleton):
 
     def set_config(self, config):
         self.config = config
+
+    def get_pager(self):
+        return self.config.get('pager', PAGER_DEFAULT) if self.config else PAGER_DEFAULT
+
 
     def read_config(self):
         self.config = {}
