@@ -104,21 +104,24 @@ def pretty_print_item(entry):
     body = entry.body
     timestamp = str(entry.pretty_date)
     pager = InformantConfig().get_pager()
-    if not argv.get(RAW_OPT) and isinstance(pager, str) and shutil.which(pager) is not None:
-        body = format_body(body)
-        title = f"# {title}"
-        with os.popen(pager, 'w') as pipe:
-            pipe.write(format_content(entry, body, timestamp, title))
-        return 
-
+    pager_is_valid = isinstance(pager, str) and shutil.which(pager) is not None
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
     if not argv.get(RAW_OPT):
-        #if not using raw also bold title
-        title = bold + title + clear
-        body = format_body(body)
-
-    print(format_content(entry, body, timestamp, title))
+        body = format_body(body)              
+        if pager_is_valid:
+            # format the title as a markdown header
+            # for a pager.
+            title = f"# {title}"
+        else:
+            #if not using raw also bold title
+            title = bold + title + clear         
+    
+    if pager_is_valid:
+        with os.popen(pager, 'w') as pipe:
+            pipe.write(format_content(entry, body, timestamp, title))
+    else:
+        print(format_content(entry, body, timestamp, title))
 
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and
