@@ -1,4 +1,4 @@
-.TH INFORMANT 1 "06 MAY 2023" informant-v0.4.6 "Informant Manual"
+.TH INFORMANT 1 "02 SEPTEMBER 2024" informant-v0.6.0 "Informant Manual"
 .SH NAME
 informant \- An Arch Linux News reader and pacman hook.
 
@@ -91,6 +91,12 @@ pacman hook runs as root, if you want to change that you can do so manually by
 editing /usr/share/libalpm/hooks/00-informant.hook
 
 .TP
+.BR \-p " " <pager> ", " \-\-pager=<pager>
+Use <pager> to display news items. This option overrides the
+.B $INFORMANT_PAGER
+environment variable.
+
+.TP
 .BR \-\-no\-cache
 Do not consider the cache (/var/cache/informant/) when fetching feeds (this
 could likely result in slower feed fetching but more up to date results). Using
@@ -121,6 +127,15 @@ Print the help and exit.
 .TP
 .BR \-V ", " \-\-version
 Print the version information and exit.
+
+.SH ENVIRONMENT
+
+.TP
+.BR INFORMANT_PAGER
+If
+.B $INFORMANT_PAGER
+is set it's value will be used as the name of the program used to display news
+items.
 
 .SH CONFIGURATION
 Informant can be configured to check multiple feeds instead of just the Arch

@@ -32,7 +32,8 @@ Options:
                                     markup
     -f <file>, --file=<file>        Use <file> as the save location for read
                                     items
-    -p <pager>, --pager=<pager>     Use <pager> as the pager to display the items
+    -p <pager>, --pager=<pager>     Use <pager> as the pager to display the
+                                    news items
     --no-cache                      Do not use cache
     --clear-cache                   Empty the cache before fetching feed(s)
     --clear-readlist                Empty the saved readlist
@@ -53,7 +54,7 @@ from informant.feed import Feed
 import informant.file as fs
 import informant.ui as ui
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 # commands
 CHECK_CMD = 'check'
