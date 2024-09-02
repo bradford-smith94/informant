@@ -14,6 +14,7 @@ CFILE_OPT = '--config'
 NOCACHE_OPT = '--no-cache'
 CLRCACHE_OPT = '--clear-cache'
 CLRREAD_OPT = '--clear-readlist'
+PAGER_OPT = '--pager'
 
 FILE_DEFAULT = '/var/lib/informant.dat' # readlist save file
 CACHE_DEFAULT = '/var/cache/informant' # http caching
@@ -90,8 +91,9 @@ class InformantConfig(metaclass=Singleton):
         self.config = config
 
     def get_pager(self):
-        return self.config.get('pager', PAGER_DEFAULT) if self.config else PAGER_DEFAULT
-
+        if self.argv.get(PAGER_OPT):
+            return self.argv.get(PAGER_OPT)
+        return PAGER_DEFAULT
 
     def read_config(self):
         self.config = {}
