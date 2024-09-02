@@ -12,7 +12,7 @@ import textwrap
 import html2text
 import psutil
 
-from informant.config import InformantConfig
+from informant.config import PAGER_DEFAULT, InformantConfig
 
 RAW_OPT = '--raw'
 
@@ -80,6 +80,21 @@ def running_from_pacman():
     debug_print('informant running from: {}'.format(p_name))
     return p_name == 'pacman'
 
+def format_content(entry, body, timestamp, title) -> str:
+    if entry.feed_name is not None:
+        feed_name = '({})'.format(entry.feed_name)
+        content = '{}\n{}\n{}\n\n{}'.format(title, feed_name, timestamp, body)
+    else:
+        content = '{}\n{}\n\n{}'.format(title, timestamp, body)
+    return content
+
+def format_body(body) :
+    h2t = html2text.HTML2Text()
+    h2t.inline_links = False
+    h2t.body_width = 85
+    body = h2t.handle(body)
+    return body
+
 def pretty_print_item(entry):
     """ Print out the given entry, replacing some markup to make it look nicer.
     If the '--raw' option has been provided then the markup will not be
@@ -87,21 +102,26 @@ def pretty_print_item(entry):
     argv = InformantConfig().get_argv()
     title = entry.title
     body = entry.body
+    timestamp = str(entry.pretty_date)
+    pager = InformantConfig().get_pager()
+    pager_is_valid = isinstance(pager, str) and shutil.which(pager) is not None
     bold = InformantConfig().colors['BOLD']
     clear = InformantConfig().colors['CLEAR']
-    timestamp = str(entry.pretty_date)
     if not argv.get(RAW_OPT):
-        #if not using raw also bold title
-        title = bold + title + clear
-        h2t = html2text.HTML2Text()
-        h2t.inline_links = False
-        h2t.body_width = 85
-        body = h2t.handle(body)
-    if entry.feed_name is not None:
-        feed_name = '({})'.format(entry.feed_name)
-        print('{}\n{}\n{}\n\n{}'.format(title, feed_name, timestamp, body))
+        body = format_body(body)              
+        if pager_is_valid:
+            # format the title as a markdown header
+            # for a pager.
+            title = f"# {title}"
+        else:
+            #if not using raw also bold title
+            title = bold + title + clear         
+    
+    if pager_is_valid:
+        with os.popen(pager, 'w') as pipe:
+            pipe.write(format_content(entry, body, timestamp, title))
     else:
-        print('{}\n{}\n\n{}'.format(title, timestamp, body))
+        print(format_content(entry, body, timestamp, title))
 
 def format_list_item(entry, index):
     """ Returns a formatted string with the entry's index number, title, and

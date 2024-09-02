@@ -32,6 +32,7 @@ Options:
                                     markup
     -f <file>, --file=<file>        Use <file> as the save location for read
                                     items
+    -p <pager>, --pager=<pager>     Use <pager> as the pager to display the items
     --no-cache                      Do not use cache
     --clear-cache                   Empty the cache before fetching feed(s)
     --clear-readlist                Empty the saved readlist
